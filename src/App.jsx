@@ -11,7 +11,7 @@ if (pathArr.length == 3) {
 }
 let _token = localStorage.getItem("token");
 let _auth = _token;
-const WEB_URL = process.env.NODE_ENV === "production" ? `wss://${process.env.DOMAIN_NAME}/` : `ws://localhost:8080`;
+const WEB_URL = process.env.NODE_ENV === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://localhost:8080`;
 
 const socket = new WebSocket(WEB_URL, _auth); // IP va port ro taghir bede
 
