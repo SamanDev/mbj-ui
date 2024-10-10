@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import $ from "jquery";
+
 // Setup WebSocket ba address server
 const loc = new URL(window.location);
 const pathArr = loc.pathname.toString().split("/");
@@ -12,7 +14,6 @@ if (pathArr.length == 3) {
 let _token = localStorage.getItem("token");
 let _auth = _token;
 const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://localhost:8080`;
-console.log(process.env);
 
 const socket = new WebSocket(WEB_URL, _auth); // IP va port ro taghir bede
 
@@ -24,17 +25,36 @@ const doCurrencyMil = (value, fix) => {
     if (value < 1000000) {
         var val = doCurrency(parseFloat(value / 1000).toFixed(fix || fix == 0 ? fix : 0)) + "K";
     } else {
-        var val = doCurrency(parseFloat(value / 1000000).toFixed(fix || fix == 0 ? fix : 0)) + "M";
+        var val = doCurrency(parseFloat(value / 1000000).toFixed(fix || fix == 0 ? fix : 1)) + "M";
+        val = val.replace(".0", "");
     }
     return val;
 };
-
+const AppOrtion = (agel) => {
+    //return false;
+    //alert(agel);
+    var scale = window.outerWidth / 1500;
+    if (agel == 90 && scale <= 1) {
+        //alert(scale)
+        document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
+    } else {
+        scale = window.outerWidth / 450;
+        //scale = 1;
+        if (scale <= 1) {
+            document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
+        }
+    }
+};
 const BlackjackGame = () => {
     var _totalBet = 0;
+    var _totalWin = 0;
+    const [gamesData, setGamesData] = useState([]);
     const [gameData, setGameData] = useState(null); // Baraye zakhire JSON object
     const [userData, setUserData] = useState(null);
+    const [gameId, setGameId] = useState(0);
     useEffect(() => {
         // Event onopen baraye vaghti ke websocket baz shode
+        AppOrtion(90);
         socket.onopen = () => {
             console.log("WebSocket connected");
         };
@@ -44,7 +64,9 @@ const BlackjackGame = () => {
             const data = JSON.parse(event.data); // Parse kardan JSON daryafti
             console.log("Game data received: ", data);
             if (data.method == "tables") {
-                setGameData(data.games[0]); // Update kardan state
+                setGamesData(data.games);
+
+                // Update kardan state
             }
             if (data.method == "connect") {
                 setUserData(data.theClient); // Update kardan state
@@ -61,12 +83,62 @@ const BlackjackGame = () => {
             // socket.close();
         };
     }, []);
-
-    // Agar gameData nist, ye matn "Loading" neshan bede
-    if (!gameData || !userData) {
+    useEffect(() => {
+        console.log("gameId",gameId)
+        if (gameId == 0) {
+            $("body").css("background", "#262a2b");
+        } else {
+            if (gameId == gamesData[0].id) {
+                $("body").css("background", "radial-gradient(#388183, #1e3d42)");
+            }
+            if (gameId == gamesData[1].id) {
+                $("body").css("background", "radial-gradient(#837538, #423e1e)");
+            }
+            if (gameId == gamesData[2].id) {
+                $("body").css("background", "radial-gradient(#723883, #1e2b42)");
+            }
+            if (gameId == gamesData[3].id) {
+                $("body").css("background", "radial-gradient(#833838, #421e1e)");
+            }
+        }
+    }, [gameId]);
+    useEffect(() => {
+        if (gamesData.length ) {
+            var _data = gamesData.filter((game) => game?.id === gameId)[0]
+            console.log(_data);
+            
+            setGameData(_data);
+        }
+    }, [gamesData, gameId]);
+    // Agar gaData nist, ye matn "Loading" neshan bede
+    if (!gamesData || !userData) {
         return <div>Loading...</div>;
     }
+    if (gameId == 0 || !gameData) {
+        return (
+            <ul className="tilesWrap">
+                {gamesData.map(function (game) {
+                    var _players = game.players.filter((player) => player.nickname).length;
+                    console.log(_players);
 
+                    return (
+                        <li onClick={() => setGameId(game.id)}>
+                            <h2>
+                                {_players}/{game.seats}
+                            </h2>
+                            <h3>{game.id}</h3>
+                            <p>
+                                Min Bet: {doCurrencyMil(game.min * 1000)}
+                                <br />
+                                Max Bet: {doCurrencyMil(game.min * 10000)}
+                            </p>
+                            <button>Join Now</button>
+                        </li>
+                    );
+                })}
+            </ul>
+        );
+    }
     return (
         <div>
             <div id="game-room" className="hide-element">
@@ -74,9 +146,9 @@ const BlackjackGame = () => {
 
                 <div id="table-graphics"></div>
 
-                <button id="leave-button">
+                <button id="leave-button" onClick={() => setGameId(0)}>
                     <i className="fas fa-sign-out-alt"></i>
-                    EXIT ROOM
+                    EXIT ROOM {gameId}
                 </button>
 
                 <button id="leave-table" className="noclick">
@@ -102,10 +174,18 @@ const BlackjackGame = () => {
                         <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
                             <div className="visibleCards">
                                 {gameData.dealer?.cards.map(function (card, i) {
-                                    return <img key={i} className={"animate__slideInUp animate__animated dealerCardImg"} src={"/imgs/" + card.suit + card.value.card + ".svg"} />;
+                                    var _dClass = "animate__slideInUp";
+                                    if (i == 1) {
+                                        _dClass = "animate__flipInY";
+                                    }
+                                    return (
+                                        <span key={i} className={" animate__animated animate__flipInY  dealerCardImg"}>
+                                            <img className={_dClass + " animate__animated dealerCardImg"} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                        </span>
+                                    );
                                 })}
                                 {gameData.dealer?.cards.length == 1 && (
-                                    <div className="flip-card">
+                                    <div className="flip-card animate__slideInUp animate__animated">
                                         <div className="flip-card-inner">
                                             <div className="flip-card-front">
                                                 <img className="dealerCardImg card-front" src="/imgs/Card_back.svg" />
@@ -128,27 +208,36 @@ const BlackjackGame = () => {
                     {gameData.players.map(function (player, pNumber) {
                         if (player.nickname == userData.nickname) {
                             _totalBet = _totalBet + player.bet;
+                            _totalWin = _totalWin + player.win;
                         }
                         var _resClass = "";
-
+                        var _resCoinClass = "animate__slideInDown";
                         var _res = "";
-                        if (gameData.dealer?.sum >= 17) {
+                        if (gameData.dealer?.sum >= 17 && gameData.dealer?.sum <= 21) {
                             if (gameData.dealer?.sum > player.sum) {
                                 _res = "LOSE";
                                 _resClass = "result-lose";
+                                _resCoinClass = "animate__delay-1s animate__backOutUp animate__repeat-3";
                             }
                             if (gameData.dealer?.sum < player.sum) {
                                 _res = "WIN";
                                 _resClass = "result-win";
+                                _resCoinClass = "animate__delay-2s animate__bounceOutDown";
                             }
                             if (gameData.dealer?.sum == player.sum) {
                                 _res = "DRAW";
                                 _resClass = "result-draw";
                             }
                         }
+                        if (gameData.dealer?.sum > 21) {
+                            _res = "WIN";
+                            _resClass = "result-win";
+                            _resCoinClass = "animate__delay-2s animate__bounceOutDown";
+                        }
                         if (player.sum > 21) {
                             _res = "🔥";
-                            _resClass = "result-lose";
+                            _resClass = "result-lose result-bust";
+                            _resCoinClass = "animate__delay-1s animate__bounceOutUp animate__repeat-3";
                         }
                         if (player.blackjack) {
                             _res = "BJ";
@@ -160,29 +249,37 @@ const BlackjackGame = () => {
                         _renge.push(_renge[0] * 10);
 
                         return (
-                            <span className="players" key={pNumber}>
+                            <span className={player.bet ? "players " + _resClass : "players "} key={pNumber}>
                                 {!player?.nickname ? (
                                     <>
-                                        <div className={gameData.gameOn ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                        <div className={gameData.gameOn || gameData.min * 1000 > userData.balance ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
                                             <i className="fas fa-user-plus"></i>
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         {!gameData.gameOn && !player.bet && player.nickname == userData.nickname && (
-                                            
-                                                <div id="bets-container">
-                                                    {_renge.map(function (bet, i) {
+                                            <div id="bets-container">
+                                                {_renge.map(function (bet, i) {
+                                                    if (bet * 1000 <= userData.balance) {
                                                         return (
                                                             <span key={i}>
-                                                                <button className="betButtons update-balance-bet animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                                                <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
                                                                     {doCurrencyMil(bet * 1000)}
                                                                 </button>
                                                             </span>
                                                         );
-                                                    })}
-                                                </div>
-                                            
+                                                    } else {
+                                                        return (
+                                                            <span key={i}>
+                                                                <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                                                    {doCurrencyMil(bet * 1000)}
+                                                                </button>
+                                                            </span>
+                                                        );
+                                                    }
+                                                })}
+                                            </div>
                                         )}
                                         {!gameData.gameOn && player.bet && (
                                             <>
@@ -206,7 +303,7 @@ const BlackjackGame = () => {
                                                 </div>
                                             </>
                                         )}
-                                        {gameData.gameOn && gameData.currentPlayer == pNumber && player.nickname == userData.nickname ? (
+                                        {gameData.gameOn && gameData.currentPlayer == pNumber && player.nickname == userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
                                             <div className="user-action-container  animate__slideInUp animate__animated">
                                                 <div id="your-turn-label">MAKE A DECISION</div>
 
@@ -224,7 +321,7 @@ const BlackjackGame = () => {
                                                 </div>
                                                 {player.cards.length == 2 && (
                                                     <div className="user-action-box  hide-element">
-                                                        <button className="user-action" id="doubleDown">
+                                                        <button className="user-action" id="doubleDown" onClick={() => socket.send(JSON.stringify({ method: "double", gameId: gameData.id, seat: pNumber }))}>
                                                             <i className="fas fa-hand-peace"></i>
                                                             <span>2X</span>
                                                         </button>
@@ -233,46 +330,53 @@ const BlackjackGame = () => {
                                                 )}
                                             </div>
                                         ) : (
-                                            
-                                                <div className={gameData.currentPlayer == pNumber ? "player-name highlight" : "player-name"}>
-                                                    {player.nickname}
-                                                    <span className="hide-element">
-                                                        <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
-                                                    </span>
-                                                </div>
-                                            
+                                            <div className={gameData.currentPlayer == pNumber ? "player-name highlight" : "player-name"}>
+                                                {player.nickname}
+                                                <span className="hide-element">
+                                                    <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                                </span>
+                                            </div>
                                         )}
 
                                         {player.sum && <div className={gameData.currentPlayer == pNumber ? "current-player-highlight player-sum" : "player-sum " + _resClass}>{player.sum}</div>}
                                         {player.bet ? (
-                                            <div className="player-coin animate__slideInDown animate__animated">
-                                                <button className="betButtons update-balance-bet" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 1000)}>
-                                                    {doCurrencyMil(player.bet)}
-                                                </button>
+                                            <div className={"player-coin animate__animated "}>
+                                                {player.isDouble ? (
+                                                    <>
+                                                        <button className="betButtons update-balance-bet" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 2000)}>
+                                                            {doCurrencyMil(player.bet)}
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button className="betButtons update-balance-bet" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 1000)}>
+                                                        {doCurrencyMil(player.bet)}
+                                                    </button>
+                                                )}
                                             </div>
                                         ) : (
-                                            <></>
+                                            <div className="player-coin animate__flipInX animate__animated">
+                                                <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                            </div>
                                         )}
                                         {_res && <div className={"player-result " + _resClass}>{_res}</div>}
 
                                         <div className="player-cards">
                                             {player.cards.map(function (card, i) {
-                                                return <img key={i} className={"animate__slideInDown animate__animated cardImg card" + (i + 1)} src={"/imgs/" + card.suit + card.value.card + ".svg"} />;
+                                                return (
+                                                    <span key={i} className={" animate__animated animate__flipInY  cardImg"}>
+                                                        <img className={player.isDouble && i == 2 ? "  animate__slideInDown isdouble  cardImg card" + (i + 1) : "animate__slideInDown  animate__animated cardImg card" + (i + 1)} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                                    </span>
+                                                );
                                             })}
                                         </div>
                                     </>
                                 )}
+                                <div id="players-timer-container">
+                                    <svg className="players-timer">
+                                        <circle className={gameData.currentPlayer == pNumber && player?.nickname && gameData.gameOn ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" stroke-width="4" fill="transparent" />
+                                    </svg>
+                                </div>
                             </span>
-                        );
-                    })}
-                </div>
-
-                <div id="players-timer-container">
-                    {gameData.players.map(function (player, pNumber) {
-                        return (
-                            <svg className="players-timer" key={pNumber}>
-                                <circle className={gameData.currentPlayer == pNumber ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" stroke-width="4" fill="transparent" />
-                            </svg>
                         );
                     })}
                 </div>
@@ -280,11 +384,15 @@ const BlackjackGame = () => {
                 <div id="balance-bet-box">
                     <div className="balance-bet">
                         Balance
-                        <div id="balance">{userData.balance}</div>
+                        <div id="balance">{doCurrency(userData.balance)}</div>
                     </div>
                     <div className="balance-bet">
                         Total Bet
-                        <div id="total-bet">{_totalBet}</div>
+                        <div id="total-bet">{doCurrency(_totalBet)}</div>
+                    </div>
+                    <div className="balance-bet">
+                        Total Win
+                        <div id="total-bet">{doCurrency(_totalWin)}</div>
                     </div>
                 </div>
             </div>
