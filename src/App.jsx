@@ -35,12 +35,12 @@ const AppOrtion = (agel) => {
     var scale = window.outerWidth / 2000;
     if (agel == 90 && scale <= 1) {
         //alert(scale)
-        document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
+        //document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
     } else {
         scale = window.outerWidth / 2000;
         //scale = 1;
         if (scale <= 1) {
-            document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
+           // document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
         }
     }
 };
