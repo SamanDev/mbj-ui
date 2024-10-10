@@ -77,9 +77,10 @@ const BlackjackGame = () => {
 
         // Event onclose baraye vaghti ke websocket baste mishe
         socket.onclose = () => {
+            
             console.log("WebSocket closed");
         };
-
+        
         // Cleanup websocket dar zamane unmount kardan component
         return () => {
             // socket.close();
@@ -161,7 +162,7 @@ const BlackjackGame = () => {
                 {gameData.startTimer >= 0 && (
                     <div id="deal-start-label" className="hide-element">
                         <p>
-                            Waiting for bets <span id="seconds">{gameData.startTimer}</span>
+                            Waiting for bets <span id="seconds">{gameData.startTimer+1}</span>
                         </p>
                     </div>
                 )}
@@ -255,7 +256,7 @@ const BlackjackGame = () => {
                             <span className={player.bet ? "players " + _resClass : "players "} key={pNumber}>
                                 {!player?.nickname ? (
                                     <>
-                                        <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet>= 2 ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                        <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet>= 3 ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
                                             <i className="fas fa-user-plus"></i>
                                         </div>
                                     </>
@@ -313,7 +314,7 @@ const BlackjackGame = () => {
                                         )}
                                         {gameData.gameOn && gameData.currentPlayer == pNumber && player.nickname == userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
                                             <div className="user-action-container  animate__slideInUp animate__animated">
-                                                <div id="your-turn-label">MAKE A DECISION</div>
+                                                <div id="your-turn-label">MAKE A DECISION {gameData.timer+1}</div>
 
                                                 <div className="user-action-box">
                                                     <button className="user-action" id="stand" onClick={() => socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }))}>
@@ -323,6 +324,7 @@ const BlackjackGame = () => {
                                                 </div>
                                                 <div className="user-action-box">
                                                     <button className="user-action" id="hit" onClick={() => socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }))}>
+                                                        
                                                         <i className="fas fa-hand-pointer"></i>
                                                     </button>
                                                     <div className="user-action-text">HIT</div>

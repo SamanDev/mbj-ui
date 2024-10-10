@@ -802,7 +802,7 @@ body {
   stroke: lime;
   stroke-dasharray: 301;
   stroke-dashoffset: 301;
-  animation: dash 9.5s linear forwards;
+  animation: dash 19.5s linear forwards;
 }
 
 @keyframes dash {
