@@ -62,7 +62,7 @@ const BlackjackGame = () => {
         // Event onmessage baraye daryaft data az server
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data); // Parse kardan JSON daryafti
-            console.log("Game data received: ", data);
+            //console.log("Game data received: ", data);
             if (data.method == "tables") {
                 setGamesData(data.games);
 
@@ -84,7 +84,7 @@ const BlackjackGame = () => {
         };
     }, []);
     useEffect(() => {
-        console.log("gameId",gameId)
+       // console.log("gameId",gameId)
         if (gameId == 0) {
             $("body").css("background", "#262a2b");
         } else {
@@ -105,7 +105,7 @@ const BlackjackGame = () => {
     useEffect(() => {
         if (gamesData.length ) {
             var _data = gamesData.filter((game) => game?.id === gameId)[0]
-            console.log(_data);
+            //console.log(_data);
             
             setGameData(_data);
         }
@@ -119,7 +119,7 @@ const BlackjackGame = () => {
             <ul className="tilesWrap">
                 {gamesData.map(function (game) {
                     var _players = game.players.filter((player) => player.nickname).length;
-                    console.log(_players);
+                    //console.log(_players);
 
                     return (
                         <li onClick={() => setGameId(game.id)}>
