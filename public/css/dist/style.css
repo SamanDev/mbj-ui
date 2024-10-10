@@ -1116,18 +1116,15 @@ i {
 #balance-bet-box {
   position: absolute;
   display: flex;
-  bottom: 40px;
-  width: 260px;
+  bottom: 15px;
+  width: 440px;
   color: white;
   text-align: center;
   border-radius: 10px;
   font-family: "Play", sans-serif;
   -webkit-user-select: none;
-  /* Safari */
   -ms-user-select: none;
-  /* IE 10+ and Edge */
   user-select: none;
-  /* Standard syntax */
 }
 
 .balance-bet {
@@ -1210,7 +1207,7 @@ i {
 #bets-container {
   position: absolute;
  
-  height: 270px;
+  height: 340px;
   margin: 0 auto;
   bottom: 90px;
   left: 50%;
@@ -1268,6 +1265,11 @@ i {
   border-radius: 10px;
   height: 30px;
   border: 1px solid black;
+}
+.betButtons#chip {
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  font-size:20px
 }
 .betButtons#chip0 {
   background: url("/imgs/chips/Casino_Chip_White.svg") no-repeat;
@@ -1378,10 +1380,10 @@ i {
 }
 .user-action-container #doubleDown span {
   position: absolute;
-  left: 28px;
-  top: 39px;
-  font-size: 17px;
-  color: #4e3c0d;
+  left: 26px;
+  top: 31px;
+  font-size: 14px;
+  color: #000000;
 }
 
 .ready {
