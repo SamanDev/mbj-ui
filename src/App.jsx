@@ -37,7 +37,7 @@ const AppOrtion = (agel) => {
         //alert(scale)
         document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
     } else {
-        scale = window.outerWidth / 450;
+        scale = window.outerWidth / 1500;
         //scale = 1;
         if (scale <= 1) {
             document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
