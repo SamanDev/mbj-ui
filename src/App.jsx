@@ -32,12 +32,12 @@ const doCurrencyMil = (value, fix) => {
 const AppOrtion = (agel) => {
     //return false;
     //alert(agel);
-    var scale = window.outerWidth / 1500;
+    var scale = window.outerWidth / 2000;
     if (agel == 90 && scale <= 1) {
         //alert(scale)
         document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
     } else {
-        scale = window.outerWidth / 1500;
+        scale = window.outerWidth / 2000;
         //scale = 1;
         if (scale <= 1) {
             document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
@@ -68,7 +68,7 @@ const BlackjackGame = () => {
         window.parent.postMessage("userget", "*");
 
         if (window.self == window.top) {
-            window.location.href = "https://www.google.com/";
+            //window.location.href = "https://www.google.com/";
         }
         // Event onopen baraye vaghti ke websocket baz shode
         AppOrtion(90);
