@@ -553,10 +553,11 @@ body {
   z-index: 200;
   border: 1px solid black;
   border-radius: 100%;
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  
 }
 #volume-button i {
   color: white;
@@ -607,7 +608,7 @@ body {
 #leave-button {
   position: absolute;
   margin-top: 10px;
-  margin-left: 10px;
+  margin-left: 90px;
   height: 30px;
   padding: 0px 6px;
   background-color: transparent;
@@ -787,7 +788,22 @@ body {
   pointer-events: none;
   z-index: 10;
 }
+#root {
+  height: 100vh;
+   
+    width: 100vw;
+    overflow: hidden;
+}
 
+#root > div{
+  height: 650px;
+    position: relative;
+    width: 1400px;
+    margin-top: 20px;
+    padding-bottom: 100px;
+    transform-origin: top left;
+    transition: all .1s ease;
+}
 .players-timer {
   position: relative;
   width: 100px;
@@ -1115,25 +1131,25 @@ i {
 
 #balance-bet-box {
   position: absolute;
-  display: flex;
-  bottom: 15px;
-  width: 440px;
-  color: white;
-  text-align: center;
-  border-radius: 10px;
-  font-family: "Play", sans-serif;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+display: grid;
+-apple-pay-button-type: 15px;
+color: white;
+text-align: center;
+border-radius: 10px;
+font-family: "Play", sans-serif;
+-webkit-user-select: none;
+top:10px;
+right: 90px;
 }
 
 .balance-bet {
-  background-color: rgba(0, 0, 0, 0.658);
+  background-color: rgba(0, 0, 0, 0.458);
   padding: 4px;
   border: 1px solid white;
   width: 155px;
   border-radius: 10px;
   margin-left: 10px;
+  margin-bottom: 8px;
 }
 .balance-bet #total-bet {
   color: #e0e000;
@@ -1584,4 +1600,54 @@ background: linear-gradient(to right, #ffc500, #c21500);
   background: #FC354C;
 background: -webkit-linear-gradient(to right, #0ABFBC, #FC354C);
 background: linear-gradient(to right, #0ABFBC, #FC354C);
+}
+@media only screen and (orientation:portrait) {
+  #turn { display:block; }
+  #root { display:none; }
+}
+
+/* (B) CORRECT ORIENTATION - SHOW CONTENT HIDE MESSAGE */
+@media only screen and (orientation:landscape) {
+  #turn { display:none; }
+  #root { display:block; }
+}
+
+.cardRotate {
+  width: 90%;
+  margin: 20% auto;
+  padding: 2% 5%;
+  border-radius: 10px;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+  background-color: #ffffff;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.animation {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+}
+
+
+.phone {
+position: relative;
+width: 30%; 
+margin: 35%;
+}
+
+
+.phone--landscape {
+  animation: landscape 3s 0s infinite;
+}
+
+@keyframes landscape {
+  0% { transform: rotate(0deg) }
+  50% { transform: rotate(90deg) }
+  100% { transform: rotate(90deg) }
+}
+
+@keyframes portrait {
+  0% { transform: rotate(90deg) }
+  100% { transform: rotate(0deg) }
 }

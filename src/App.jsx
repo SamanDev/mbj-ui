@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from "react";
 import $ from "jquery";
 
-// Setup WebSocket ba address server
+let _auth = null;
 const loc = new URL(window.location);
 const pathArr = loc.pathname.toString().split("/");
 
 if (pathArr.length == 3) {
-    localStorage.setItem("token", pathArr[1]);
-    localStorage.setItem("username", pathArr[2]);
-    window.location = "/";
+    _auth = pathArr[1];
 }
-let _token = localStorage.getItem("token");
-let _auth = _token;
-const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://localhost:8080`;
+const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://${loc.hostname}:8080`;
 
-const socket = new WebSocket(WEB_URL, _auth); // IP va port ro taghir bede
+// (A) LOCK SCREEN ORIENTATION
 
 const doCurrency = (value) => {
     var val = value?.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
@@ -29,21 +25,59 @@ const doCurrencyMil = (value, fix) => {
     }
     return val;
 };
-const AppOrtion = (agel) => {
-    //return false;
-    //alert(agel);
-    var scale = window.outerWidth / 2000;
-    if (agel == 90 && scale <= 1) {
-        //alert(scale)
-        //document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
-    } else {
-        scale = window.outerWidth / 2000;
-        //scale = 1;
-        if (scale <= 1) {
-           // document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=" + scale + ",maximum-scale=" + scale + "");
-        }
+const AppOrtion = () => {
+    var gWidth = $("#root").width()/1400;
+    
+   
+    
+  
+    var scale = gWidth;
+var highProtect = $("#root").height()*scale;
+    if(highProtect<750){
+        var gHight = $("#root").height()/750;
+       // scale = (scale + gHight)/2;
+        scale =  gHight;
+        setTimeout(() => {
+            
+            $("#scale").css("transform", "scale(" + (scale) + ") translateX("+ scale *10+"%)");
+        
+        }, 1);
+    }else{
+        setTimeout(() => {
+            $("#scale").css("transform", "scale(" + (scale) + ")");
+        }, 1);
     }
+
+    console.log(gWidth,highProtect,gHight,scale)
+   
 };
+const socket = new WebSocket(WEB_URL, _auth);
+window.addEventListener("message", function (event) {
+    
+
+    if (event?.data?.username) {
+        const payLoad = {
+            method: "syncBalance",
+
+            balance: event?.data?.balance,
+        };
+        try {
+            socket.send(JSON.stringify(payLoad));
+        } catch (error) {}
+    }
+});
+var supportsOrientationChange = "onorientationchange" in window,
+    orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
+
+window.addEventListener(orientationEvent, function() {
+    AppOrtion(window.orientation?window.orientation:0)
+   
+}, false);
+window.parent.postMessage("userget", "*");
+
+if (window.self == window.top) {
+    //window.location.href = "https://www.google.com/";
+}
 const BlackjackGame = () => {
     var _countBet = 0;
 
@@ -53,25 +87,12 @@ const BlackjackGame = () => {
     const [gameData, setGameData] = useState(null); // Baraye zakhire JSON object
     const [userData, setUserData] = useState(null);
     const [gameId, setGameId] = useState(0);
+
     useEffect(() => {
-        window.addEventListener("message", function (event) {
-            if (event?.data?.username) {
-                const payLoad = {
-                    method: "syncBalance",
+        
 
-                    balance: event?.data?.balance,
-                };
-                socket.send(JSON.stringify(payLoad));
-            }
-        });
-
-        window.parent.postMessage("userget", "*");
-
-        if (window.self == window.top) {
-            //window.location.href = "https://www.google.com/";
-        }
         // Event onopen baraye vaghti ke websocket baz shode
-        AppOrtion(90);
+
         socket.onopen = () => {
             console.log("WebSocket connected");
         };
@@ -94,11 +115,12 @@ const BlackjackGame = () => {
         socket.onclose = () => {
             console.log("WebSocket closed");
         };
-
+        
         // Cleanup websocket dar zamane unmount kardan component
         return () => {
             // socket.close();
         };
+        
     }, []);
     useEffect(() => {
         // console.log("gameId",gameId)
@@ -126,6 +148,7 @@ const BlackjackGame = () => {
 
             setGameData(_data);
         }
+        AppOrtion(0);
     }, [gamesData, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
     if (!gamesData || !userData) {
@@ -133,6 +156,7 @@ const BlackjackGame = () => {
     }
     if (gameId == 0 || !gameData) {
         return (
+            <span id="scale">
             <ul className="tilesWrap">
                 {gamesData.map(function (game, i) {
                     var _players = game.players.filter((player) => player.nickname).length;
@@ -153,12 +177,19 @@ const BlackjackGame = () => {
                         </li>
                     );
                 })}
-            </ul>
+            </ul></span>
         );
     }
+    {gameData.players.map(function (player, pNumber) {
+        if (player.nickname == userData.nickname) {
+            _countBet = _countBet + 1;
+            _totalBet = _totalBet + player.bet;
+            _totalWin = _totalWin + player.win;
+        }
+    })}
     return (
-        <div>
-            <div id="game-room" className="hide-element">
+        <div id="scale">
+            <div id="game-room" style={{}}>
                 <div id="dark-overlay"></div>
 
                 <div id="table-graphics"></div>
@@ -166,7 +197,20 @@ const BlackjackGame = () => {
                 <button id="leave-button" onClick={() => setGameId(0)}>
                     <i className="fas fa-sign-out-alt"></i> EXIT {gameId}
                 </button>
-
+                <div id="balance-bet-box">
+                    <div className="balance-bet">
+                        Balance
+                        <div id="balance">{doCurrency(userData.balance)}</div>
+                    </div>
+                    <div className="balance-bet">
+                        Total Bet
+                        <div id="total-bet">{doCurrency(_totalBet)}</div>
+                    </div>
+                    <div className="balance-bet">
+                        Total Win
+                        <div id="total-bet">{doCurrency(_totalWin)}</div>
+                    </div>
+                </div>
                 <div id="volume-button">
                     <i className="fas fa-volume-up"></i>
                 </div>
@@ -197,31 +241,24 @@ const BlackjackGame = () => {
                                 })}
                                 {gameData.dealer?.cards.length == 1 && (
                                     <>
-                                    {gameData.dealer?.hiddencards.map(function (card, i) {
-                                        var _dClass = "animate__flipInY";
-                                       
-                                        return (
-                                            <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
-                                                <img className={" animate__animated dealerCardImg"} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
-                                            </span>
-                                        );
-                                    })}
+                                        {gameData.dealer?.hiddencards.map(function (card, i) {
+                                            var _dClass = "animate__flipInY";
+
+                                            return (
+                                                <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
+                                                    <img className={" animate__animated dealerCardImg"} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                                </span>
+                                            );
+                                        })}
                                     </>
                                 )}
                             </div>
-                            
                         </div>
                     )}
                 </div>
 
                 <div id="players-container">
-                    {gameData.players.map(function (player, pNumber) {
-                        if (player.nickname == userData.nickname) {
-                            _countBet = _countBet + 1;
-                            _totalBet = _totalBet + player.bet;
-                            _totalWin = _totalWin + player.win;
-                        }
-                    })}
+                    
                     {gameData.players.map(function (player, pNumber) {
                         var _resClass = "";
                         var _resCoinClass = "animate__slideInDown";
@@ -397,21 +434,6 @@ const BlackjackGame = () => {
                             </span>
                         );
                     })}
-                </div>
-
-                <div id="balance-bet-box">
-                    <div className="balance-bet">
-                        Balance
-                        <div id="balance">{doCurrency(userData.balance)}</div>
-                    </div>
-                    <div className="balance-bet">
-                        Total Bet
-                        <div id="total-bet">{doCurrency(_totalBet)}</div>
-                    </div>
-                    <div className="balance-bet">
-                        Total Win
-                        <div id="total-bet">{doCurrency(_totalWin)}</div>
-                    </div>
                 </div>
             </div>
         </div>
