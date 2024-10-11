@@ -39,7 +39,7 @@ var highProtect = $("#root").height()*scale;
         scale =  gHight;
         setTimeout(() => {
             
-            $("#scale").css("transform", "scale(" + (scale) + ") translateX("+ scale *10+"%)");
+            $("#scale").css("transform", "scale(" + (scale) + ")");
         
         }, 10);
     }else{
