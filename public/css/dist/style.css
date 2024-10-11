@@ -1482,9 +1482,8 @@ right: 90px;
 }
 .tilesWrap li {
   display: inline-block;
-  width: 20%;
+  width: 40%;
   min-width: 200px;
-  max-width: 230px;
   padding: 80px 20px 40px;
   position: relative;
   vertical-align: top;

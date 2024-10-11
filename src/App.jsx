@@ -26,7 +26,7 @@ const doCurrencyMil = (value, fix) => {
     return val;
 };
 const AppOrtion = () => {
-    var gWidth = $("#root").width()/1400;
+    var gWidth = $("#root").width()/1450;
     
    
     
@@ -41,14 +41,14 @@ var highProtect = $("#root").height()*scale;
             
             $("#scale").css("transform", "scale(" + (scale) + ") translateX("+ scale *10+"%)");
         
-        }, 1);
+        }, 10);
     }else{
         setTimeout(() => {
             $("#scale").css("transform", "scale(" + (scale) + ")");
-        }, 1);
+        }, 10);
     }
 
-    console.log(gWidth,highProtect,gHight,scale)
+   // console.log(gWidth,highProtect,gHight,scale)
    
 };
 const socket = new WebSocket(WEB_URL, _auth);
@@ -156,7 +156,7 @@ const BlackjackGame = () => {
     }
     if (gameId == 0 || !gameData) {
         return (
-            <span id="scale">
+            <div id="scale">
             <ul className="tilesWrap">
                 {gamesData.map(function (game, i) {
                     var _players = game.players.filter((player) => player.nickname).length;
@@ -177,7 +177,7 @@ const BlackjackGame = () => {
                         </li>
                     );
                 })}
-            </ul></span>
+            </ul></div>
         );
     }
     {gameData.players.map(function (player, pNumber) {
