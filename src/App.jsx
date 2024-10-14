@@ -36,21 +36,40 @@ const haveSideBet = (sideBets, nickname, seat, mode) => {
     return _have;
 };
 const AppOrtion = () => {
-    var gWidth = $("#root").width() / 1450;
+    var gWidth = $("#root").width() / 1400;
 
     var scale = gWidth;
     var highProtect = $("#root").height() * scale;
-    if (highProtect < 750) {
-        var gHight = $("#root").height() / 750;
+   
+    
+    if (highProtect >  (850 )) {
+        var gHight = $("#root").height() / (850);
         // scale = (scale + gHight)/2;
         scale = gHight;
-        setTimeout(() => {
-            $("#scale").css("transform", "scale(" + scale + ")");
-        }, 10);
+        if (scale <= 1) {
+            setTimeout(() => {
+                $("#scale").css("transform", "scale(" + scale + ")");
+            }, 10);
+        } else {
+            scale = 1;
+            setTimeout(() => {
+                $("#scale").css("transform", "scale(" + scale + ")");
+            }, 10);
+        }
     } else {
-        setTimeout(() => {
-            $("#scale").css("transform", "scale(" + scale + ")");
-        }, 10);
+        var gHight = $("#root").height() / (850);
+        // scale = (scale + gHight)/2;
+        scale = gHight;
+        if (scale <= 1) {
+            setTimeout(() => {
+                $("#scale").css("transform", "scale(" + scale + ")");
+            }, 10);
+        } else {
+            scale = 1;
+            setTimeout(() => {
+                $("#scale").css("transform", "scale(" + scale + ")");
+            }, 10);
+        }
     }
 
     // console.log(gWidth,highProtect,gHight,scale)
@@ -137,16 +156,16 @@ const BlackjackGame = () => {
             $("body").css("background", "#262a2b");
         } else {
             if (gameId == gamesData[0].id) {
-                $("body").css("background", "radial-gradient(#388183, #1e3d42)");
+                $("body").css("background", "radial-gradient(#388183, #1e3d42)").removeAttr('class').addClass('tabl1');
             }
             if (gameId == gamesData[1].id) {
-                $("body").css("background", "radial-gradient(#837538, #423e1e)");
+                $("body").css("background", "radial-gradient(#837538, #423e1e)").removeAttr('class').addClass('tabl2');
             }
             if (gameId == gamesData[2].id) {
-                $("body").css("background", "radial-gradient(#723883, #1e2b42)");
+                $("body").css("background", "radial-gradient(#723883, #1e2b42)").removeAttr('class').addClass('tabl3');
             }
             if (gameId == gamesData[3].id) {
-                $("body").css("background", "radial-gradient(#833838, #421e1e)");
+                $("body").css("background", "radial-gradient(#833838, #421e1e)").removeAttr('class').addClass('tabl4');
             }
         }
     }, [gameId]);
@@ -168,8 +187,8 @@ const BlackjackGame = () => {
     }
     if (gameId == 0 || !gameData) {
         return (
-            <div id="scale">
-                <ul className="tilesWrap">
+            <div>
+                <ul className="tilesWrap" id="scale">
                     {gamesData.map(function (game, i) {
                         var _players = game.players.filter((player) => player.nickname).length;
                         //console.log(_players);
@@ -209,8 +228,8 @@ const BlackjackGame = () => {
         });
     }
     return (
-        <div id="scale">
-            <div id="game-room">
+        <div>
+            <div className="game-room" id="scale">
                 <div id="dark-overlay"></div>
 
                 <div id="table-graphics"></div>

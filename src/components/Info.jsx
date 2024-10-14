@@ -16,19 +16,20 @@ const ModalExampleScrollingContent = (prop) => {
   return (
     <span  id="leave-button" >
    
-                <Button basic color="grey" style={{position:'relative',marginBottom:10}}  onClick={() => prop.setGameId(0)}><i className="fas fa-sign-out-alt"></i> EXIT <span id="gameId">{prop.gameId}</span></Button><br/>
+                <Button basic inverted  color="grey" size='mini' style={{position:'relative',marginBottom:10}}  onClick={() => prop.setGameId(0)}  icon labelPosition='left'>
+                <Icon name='arrow left' />EXIT <span id="gameId">{prop.gameId}</span></Button>
     <Modal
       open={open}
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       size='tiny'
-      trigger={<Button basic color="grey" style={{position:'relative'}}>SideBets Info</Button>}
+      trigger={<Button basic inverted  color="grey"  size='mini' style={{position:'relative',display:"block"}}   icon labelPosition='left'>
+                <Icon name='info' />Side Bets</Button>}
     >
-      <ModalHeader>SideBets Info</ModalHeader>
+      
       <ModalContent scrolling>
       
 
-        <ModalDescription>
         <article data-target="toc" data-el="SitemapPage616">
 		
 <h2 id="perfect-pairs-blackj">Perfect Pairs Blackjack Side Bet</h2>
@@ -54,7 +55,7 @@ const ModalExampleScrollingContent = (prop) => {
 <img class="content-img" loading="lazy" src="/imgs/info/bb9d24813a.jpg" alt="suited triple"/>
 
 	</article>
-        </ModalDescription>
+        
       </ModalContent>
      
     </Modal>
