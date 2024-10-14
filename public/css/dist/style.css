@@ -610,17 +610,7 @@ body {
   margin-top: 10px;
   margin-left: 90px;
   height: 30px;
-  padding: 0px 6px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  color: rgba(255, 255, 255, 0.6);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  font-weight: 700;
-  width: fit-content;
-  cursor: pointer;
-  text-align: center;
+  
   z-index: 10;
   -webkit-user-select: none;
   /* Safari */
@@ -632,17 +622,14 @@ body {
 #leave-button i {
   transform: rotate(180deg);
 }
-
-#leave-button:hover {
-  color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+.myloading,.myloading *{
+  position: absolute !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background:transparent !important
 }
-
-#leave-button:active {
-  color: white;
-  border: 2px solid white;
-}
-
 #leave-table {
   position: absolute;
   bottom: 40px;
@@ -729,7 +716,7 @@ body {
 #deal-start-label {
   position: absolute;
   left: 50%;
-  margin-top: 240px;
+  margin-top: 160px;
   display: inline-block;
   font-size: 36px;
   color: white;
@@ -772,7 +759,17 @@ body {
   transform: scale(1);
   transition: all 1s ease;
 }
-
+.players.curplayer {
+  z-index: 34;
+}
+.bets-side-win{
+  color: chartreuse;
+    font-size: 20px;
+    position: absolute;
+    margin-top: -24px;
+    width: 100%;
+    text-align: center;
+}
 
 #players-timer-container {
   position: relative;
@@ -1237,18 +1234,36 @@ right: 90px;
 #bets-container-right {
   position: absolute;
  
-  height: 250px;
+  height: 230px;
   margin: 0 auto;
   bottom: 70px;
   left: 50%;
+  transform: scale(.6);
   
+  transform-origin: bottom right;
   display: grid;
   color: black;
   text-align: center;
   justify-content: space-evenly;
   align-items: center;
 }
-.rsidebet{display:none}
+#bets-container-left {
+  position: absolute;
+ 
+  height: 230px;
+  margin: 0 auto;
+  bottom: 70px;
+  left: 50%;
+  transform: scale(.6) translate(-113px, 0px);
+  
+  transform-origin: bottom left;
+  display: grid;
+  color: black;
+  text-align: center;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
 .betButtons {
   position: relative;
   width: 68px;
@@ -1271,6 +1286,26 @@ right: 90px;
 }
 .betButtons:active {
   transform: scale(1);
+}
+.betButtons.place {
+  box-shadow: none;
+  color: white;
+  text-shadow: none;
+  border: #fff solid 2px;
+  font-size: 15px;
+
+}
+.description img {
+  height: 70px;
+  margin-bottom: 30px;
+}
+.betButtons.place.winner {
+  box-shadow: 0 0 10px rgb(9, 226, 27);
+  color: chartreuse;
+  text-shadow: none;
+  border: #48d21a solid 2px;
+  font-size: 15px;
+
 }
 #bets-container .max-clear {
   font-weight: 500;

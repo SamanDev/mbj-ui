@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import $ from "jquery";
-
+import Info from "./components/Info";
+import Loader from "./components/Loader";
 let _auth = null;
 const loc = new URL(window.location);
 const pathArr = loc.pathname.toString().split("/");
@@ -25,36 +26,37 @@ const doCurrencyMil = (value, fix) => {
     }
     return val;
 };
+const haveSideBet = (sideBets, nickname, seat, mode) => {
+    var _have = false;
+    sideBets
+        .filter((sideBet) => sideBet?.seat == seat && sideBet?.mode == mode && sideBet?.nickname == nickname)
+        .map(function (bet) {
+            _have = bet.amount;
+        });
+    return _have;
+};
 const AppOrtion = () => {
-    var gWidth = $("#root").width()/1450;
-    
-   
-    
-  
+    var gWidth = $("#root").width() / 1450;
+
     var scale = gWidth;
-var highProtect = $("#root").height()*scale;
-    if(highProtect<750){
-        var gHight = $("#root").height()/750;
-       // scale = (scale + gHight)/2;
-        scale =  gHight;
+    var highProtect = $("#root").height() * scale;
+    if (highProtect < 750) {
+        var gHight = $("#root").height() / 750;
+        // scale = (scale + gHight)/2;
+        scale = gHight;
         setTimeout(() => {
-            
-            $("#scale").css("transform", "scale(" + (scale) + ")");
-        
+            $("#scale").css("transform", "scale(" + scale + ")");
         }, 10);
-    }else{
+    } else {
         setTimeout(() => {
-            $("#scale").css("transform", "scale(" + (scale) + ")");
+            $("#scale").css("transform", "scale(" + scale + ")");
         }, 10);
     }
 
-   // console.log(gWidth,highProtect,gHight,scale)
-   
+    // console.log(gWidth,highProtect,gHight,scale)
 };
 const socket = new WebSocket(WEB_URL, _auth);
 window.addEventListener("message", function (event) {
-    
-
     if (event?.data?.username) {
         const payLoad = {
             method: "syncBalance",
@@ -69,15 +71,19 @@ window.addEventListener("message", function (event) {
 var supportsOrientationChange = "onorientationchange" in window,
     orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
 
-window.addEventListener(orientationEvent, function() {
-    AppOrtion(window.orientation?window.orientation:0)
-   
-}, false);
+window.addEventListener(
+    orientationEvent,
+    function () {
+        AppOrtion();
+    },
+    false
+);
 window.parent.postMessage("userget", "*");
 
 if (window.self == window.top) {
     //window.location.href = "https://www.google.com/";
 }
+
 const BlackjackGame = () => {
     var _countBet = 0;
 
@@ -87,10 +93,9 @@ const BlackjackGame = () => {
     const [gameData, setGameData] = useState(null); // Baraye zakhire JSON object
     const [userData, setUserData] = useState(null);
     const [gameId, setGameId] = useState(0);
+    const [gameTimer, setGameTimer] = useState(-1);
 
     useEffect(() => {
-        
-
         // Event onopen baraye vaghti ke websocket baz shode
 
         socket.onopen = () => {
@@ -109,18 +114,22 @@ const BlackjackGame = () => {
             if (data.method == "connect") {
                 setUserData(data.theClient); // Update kardan state
             }
+            if (data.method == "timer") {
+                if (data.gameId == $("#gameId").text()) {
+                    setGameTimer(data.sec); // Update kardan state
+                }
+            }
         };
 
         // Event onclose baraye vaghti ke websocket baste mishe
         socket.onclose = () => {
             console.log("WebSocket closed");
         };
-        
+
         // Cleanup websocket dar zamane unmount kardan component
         return () => {
             // socket.close();
         };
-        
     }, []);
     useEffect(() => {
         // console.log("gameId",gameId)
@@ -142,61 +151,71 @@ const BlackjackGame = () => {
         }
     }, [gameId]);
     useEffect(() => {
-        if (gamesData.length) {
+        if (gamesData.length && gameId != 0) {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
             //console.log(_data);
 
             setGameData(_data);
+            if (_data.dealer?.cards.length > 1) {
+                setGameTimer(-1);
+            }
         }
-        AppOrtion(0);
+        AppOrtion();
     }, [gamesData, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
     if (!gamesData || !userData) {
-        return <div>Loading...</div>;
+        return <Loader />;
     }
     if (gameId == 0 || !gameData) {
         return (
             <div id="scale">
-            <ul className="tilesWrap">
-                {gamesData.map(function (game, i) {
-                    var _players = game.players.filter((player) => player.nickname).length;
-                    //console.log(_players);
+                <ul className="tilesWrap">
+                    {gamesData.map(function (game, i) {
+                        var _players = game.players.filter((player) => player.nickname).length;
+                        //console.log(_players);
 
-                    return (
-                        <li onClick={() => setGameId(game.id)} key={i}>
-                            <h2>
-                                {_players}/{game.seats}
-                            </h2>
-                            <h3>{game.id}</h3>
-                            <p>
-                                Min Bet: {doCurrencyMil(game.min * 1000)}
-                                <br />
-                                Max Bet: {doCurrencyMil(game.min * 10000)}
-                            </p>
-                            <button>Join Now</button>
-                        </li>
-                    );
-                })}
-            </ul></div>
+                        return (
+                            <li onClick={() => setGameId(game.id)} key={i}>
+                                <h2>
+                                    {_players}/{game.seats}
+                                </h2>
+                                <h3>{game.id}</h3>
+                                <p>
+                                    Min Bet: {doCurrencyMil(game.min * 1000)}
+                                    <br />
+                                    Max Bet: {doCurrencyMil(game.min * 10000)}
+                                </p>
+                                <button>Join Now</button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
         );
     }
-    {gameData.players.map(function (player, pNumber) {
-        if (player.nickname == userData.nickname) {
-            _countBet = _countBet + 1;
-            _totalBet = _totalBet + player.bet;
-            _totalWin = _totalWin + player.win;
-        }
-    })}
+    {
+        gameData.players.map(function (player, pNumber) {
+            if (player.nickname == userData.nickname) {
+                _countBet = _countBet + 1;
+                _totalBet = _totalBet + player.bet;
+                _totalWin = _totalWin + player.win;
+            }
+        });
+        gameData.sideBets.map(function (player, pNumber) {
+            if (player.nickname == userData.nickname) {
+                _totalBet = _totalBet + player.amount;
+                _totalWin = _totalWin + player.win;
+            }
+        });
+    }
     return (
         <div id="scale">
-            <div id="game-room" style={{}}>
+            <div id="game-room">
                 <div id="dark-overlay"></div>
 
                 <div id="table-graphics"></div>
 
-                <button id="leave-button" onClick={() => setGameId(0)}>
-                    <i className="fas fa-sign-out-alt"></i> EXIT {gameId}
-                </button>
+                <Info setGameId={setGameId} gameId={gameId} />
                 <div id="balance-bet-box">
                     <div className="balance-bet">
                         Balance
@@ -214,10 +233,10 @@ const BlackjackGame = () => {
                 <div id="volume-button">
                     <i className="fas fa-volume-up"></i>
                 </div>
-                {gameData.startTimer >= 0 && (
+                {gameTimer >= 0 && !gameData.gameOn && (
                     <div id="deal-start-label" className="hide-element">
                         <p>
-                            Waiting for bets <span id="seconds">{gameData.startTimer + 1}</span>
+                            Waiting for bets <span>{gameTimer}</span>
                         </p>
                     </div>
                 )}
@@ -258,7 +277,6 @@ const BlackjackGame = () => {
                 </div>
 
                 <div id="players-container">
-                    
                     {gameData.players.map(function (player, pNumber) {
                         var _resClass = "";
                         var _resCoinClass = "animate__slideInDown";
@@ -297,9 +315,14 @@ const BlackjackGame = () => {
                         _renge.push(_renge[0] * 2);
                         _renge.push(_renge[0] * 5);
                         _renge.push(_renge[0] * 10);
+                        var sidePP = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "PerfectPer");
+                        var sidePPPlayer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
+
+                        var side213 = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "21+3");
+                        var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
 
                         return (
-                            <span className={player.bet ? "players " + _resClass : "players "} key={pNumber}>
+                            <span className={player.bet ? (gameData.currentPlayer == pNumber ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber}>
                                 {!player?.nickname ? (
                                     <>
                                         <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
@@ -336,31 +359,95 @@ const BlackjackGame = () => {
                                                 })}
                                             </div>
                                         )}
-                                        {!gameData.gameOn && player.bet > 0 && (
+                                        {player.bet > 0 && (
                                             <>
-                                                {/* <div id="bets-container-right">
+                                                <div id="bets-container-left">
                                                     {_renge.map(function (bet, i) {
                                                         if (i < 2) {
                                                             return (
-                                                                <span key={i} className="rsidebet">
-                                                                    <button className="betButtons update-balance-bet" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                                                <span key={i}>
+                                                                    <button
+                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        id={"chip" + i}
+                                                                        value={bet * 1000}
+                                                                        onClick={() => socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }))}
+                                                                    >
                                                                         {doCurrencyMil(bet * 1000)}
                                                                     </button>
                                                                 </span>
                                                             );
                                                         }
                                                     })}
-                                                    <span>
-                                                        <button className="betButtons update-balance-bet" onClick={() => playerRightBet.classList.remove("rsidebet")}>
-                                                            Flush
-                                                        </button>
+
+                                                    <span className={player?.sideppx > 0 ? "winner" : ""}>
+                                                        {player?.sideppx > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.sideppx}</div>}
+                                                        {sidePP ? (
+                                                            <>
+                                                                <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == sidePP / 1000)}>
+                                                                    {doCurrencyMil(sidePP)}
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {sidePPPlayer ? (
+                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == sidePPPlayer / 1000)}>
+                                                                        {doCurrencyMil(sidePPPlayer)}
+                                                                    </button>
+                                                                ) : (
+                                                                    <button className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                        Perfect
+                                                                        <br />
+                                                                        Per
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </span>
-                                                </div> */}
+                                                </div>
+                                                <div id="bets-container-right">
+                                                    {_renge.map(function (bet, i) {
+                                                        if (i < 2) {
+                                                            return (
+                                                                <span key={i}>
+                                                                    <button
+                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        id={"chip" + i}
+                                                                        value={bet * 1000}
+                                                                        onClick={() => socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }))}
+                                                                    >
+                                                                        {doCurrencyMil(bet * 1000)}
+                                                                    </button>
+                                                                </span>
+                                                            );
+                                                        }
+                                                    })}
+                                                    <span className={player?.side213x > 0 ? "winner" : ""}>
+                                                        {player?.side213x > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.side213x}</div>}
+                                                        {side213 ? (
+                                                            <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == side213 / 1000)}>
+                                                                {doCurrencyMil(side213)}
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                {side213layer ? (
+                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == side213layer / 1000)}>
+                                                                        {doCurrencyMil(side213layer)}
+                                                                    </button>
+                                                                ) : (
+                                                                    <button className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                        21
+                                                                        <br />+ 3
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                </div>
                                             </>
                                         )}
                                         {gameData.gameOn && gameData.currentPlayer == pNumber && player.nickname == userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
                                             <div className="user-action-container  animate__slideInUp animate__animated">
-                                                <div id="your-turn-label">MAKE A DECISION {gameData.timer + 1}</div>
+                                                <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
 
                                                 <div className="user-action-box">
                                                     <button className="user-action" id="stand" onClick={() => socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }))}>
@@ -395,15 +482,15 @@ const BlackjackGame = () => {
 
                                         {player.sum > 0 && <div className={gameData.currentPlayer == pNumber ? "current-player-highlight player-sum" : "player-sum " + _resClass}>{player.sum}</div>}
                                         {player.bet > 0 ? (
-                                            <div className={"player-coin animate__animated "}>
+                                            <div className={"player-coin"}>
                                                 {player.isDouble ? (
                                                     <>
-                                                        <button className="betButtons update-balance-bet" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 2000)}>
+                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 2000)}>
                                                             {doCurrencyMil(player.bet)}
                                                         </button>
                                                     </>
                                                 ) : (
-                                                    <button className="betButtons update-balance-bet" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 1000)}>
+                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet == player.bet / 1000)}>
                                                         {doCurrencyMil(player.bet)}
                                                     </button>
                                                 )}
