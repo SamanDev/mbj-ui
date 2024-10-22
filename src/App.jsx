@@ -115,6 +115,8 @@ const BlackjackGame = () => {
     const [gamesData, setGamesData] = useState([]);
     const [gameData, setGameData] = useState(null); // Baraye zakhire JSON object
     const [userData, setUserData] = useState(null);
+
+    const [conn, setConn] = useState(true);
     const [gameId, setGameId] = useState(0);
     const [gameTimer, setGameTimer] = useState(-1);
 
@@ -136,8 +138,10 @@ const BlackjackGame = () => {
             }
             if (data.method == "connect") {
                 if(data.theClient?.balance>=0){
+
                     setUserData(data.theClient);
                 }else{
+                    setConn(false);
                     _auth = null
                 }
                  // Update kardan state
@@ -152,6 +156,8 @@ const BlackjackGame = () => {
         // Event onclose baraye vaghti ke websocket baste mishe
         socket.onclose = () => {
             console.log("WebSocket closed");
+            setConn(false);
+            _auth = null
         };
 
         // Cleanup websocket dar zamane unmount kardan component
@@ -191,8 +197,8 @@ const BlackjackGame = () => {
         AppOrtion();
     }, [gamesData, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
-    if(_auth==null) {
-        return <Loader err={true}/>;
+    if(_auth==null || !conn) {
+        return <Loader errcon={true}/>;
     }
     if (!gamesData || !userData) {
         return <Loader />;
@@ -429,7 +435,7 @@ const BlackjackGame = () => {
                                                                     <button className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
                                                                         Perfect
                                                                         <br />
-                                                                        Per
+                                                                        Pairs
                                                                     </button>
                                                                 )}
                                                             </>
