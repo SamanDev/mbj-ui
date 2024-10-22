@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import $ from "jquery";
 import Info from "./components/Info";
 import Loader from "./components/Loader";
+import { Howl } from "howler";
+
 let _auth = null;
 const loc = new URL(window.location);
 const pathArr = loc.pathname.toString().split("/");
 
 if (pathArr.length == 3) {
     _auth = pathArr[1];
-    
 }
 //_auth = "farshad-HangOver2";
 //console.log(_auth);
@@ -44,10 +45,9 @@ const AppOrtion = () => {
 
     var scale = gWidth;
     var highProtect = $("#root").height() * scale;
-   
-    
-    if (highProtect >  (850 )) {
-        var gHight = $("#root").height() / (850);
+
+    if (highProtect > 850) {
+        var gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
         scale = gHight;
         if (scale <= 1) {
@@ -61,7 +61,7 @@ const AppOrtion = () => {
             }, 10);
         }
     } else {
-        var gHight = $("#root").height() / (850);
+        var gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
         scale = gHight;
         if (scale <= 1) {
@@ -106,6 +106,41 @@ window.parent.postMessage("userget", "*");
 if (window.self == window.top) {
     //window.location.href = "https://www.google.com/";
 }
+let dealingSound = new Howl({
+    src: ["/sounds/dealing_card_fix3.mp3"],
+    volume: 0.5,
+});
+let chipHover = new Howl({
+    src: ["/sounds/chip_hover_fix.mp3"],
+    volume: 0.1,
+});
+let chipPlace = new Howl({
+    src: ["/sounds/chip_place.mp3"],
+    volume: 0.1,
+});
+let actionClick = new Howl({
+    src: ["/sounds/actionClick.mp3"],
+    volume: 0.1,
+});
+let defaultClick = new Howl({
+    src: ["/sounds/click_default.mp3"],
+    volume: 0.1,
+});
+let clickFiller = new Howl({
+    src: ["/sounds/click_filler.mp3"],
+    volume: 0.1,
+});
+let timerRunningOut = new Howl({
+    src: ["/sounds/timer_running_out.mp3"],
+    volume: 0.5,
+});
+
+// let youWin = new Howl({
+//   src: ['/sounds/you_win.mp3']
+// });
+// let youLose = new Howl({
+//   src: ['/sounds/you_lose.mp3']
+// });
 
 const BlackjackGame = () => {
     var _countBet = 0;
@@ -137,27 +172,35 @@ const BlackjackGame = () => {
                 // Update kardan state
             }
             if (data.method == "connect") {
-                if(data.theClient?.balance>=0){
-
+                if (data.theClient?.balance >= 0) {
                     setUserData(data.theClient);
-                }else{
+                } else {
                     setConn(false);
-                    _auth = null
+                    _auth = null;
                 }
-                 // Update kardan state
+                // Update kardan state
             }
             if (data.method == "timer") {
                 if (data.gameId == $("#gameId").text()) {
+                    if(data.sec==5){
+                        timerRunningOut.play();
+                    }
                     setGameTimer(data.sec); // Update kardan state
                 }
             }
+            if (data.method == "deal") {
+                if (data.gameId == $("#gameId").text()) {
+                    dealingSound.play()
+                }
+            }
+            
         };
 
         // Event onclose baraye vaghti ke websocket baste mishe
         socket.onclose = () => {
             console.log("WebSocket closed");
             setConn(false);
-            _auth = null
+            _auth = null;
         };
 
         // Cleanup websocket dar zamane unmount kardan component
@@ -171,20 +214,53 @@ const BlackjackGame = () => {
             $("body").css("background", "#262a2b");
         } else {
             if (gameId == gamesData[0].id) {
-                $("body").css("background", "radial-gradient(#388183, #1e3d42)").removeAttr('class').addClass('tabl1');
+                $("body").css("background", "radial-gradient(#388183, #1e3d42)").removeAttr("class").addClass("tabl1");
             }
             if (gameId == gamesData[1].id) {
-                $("body").css("background", "radial-gradient(#837538, #423e1e)").removeAttr('class').addClass('tabl2');
+                $("body").css("background", "radial-gradient(#837538, #423e1e)").removeAttr("class").addClass("tabl2");
             }
             if (gameId == gamesData[2].id) {
-                $("body").css("background", "radial-gradient(#723883, #1e2b42)").removeAttr('class').addClass('tabl3');
+                $("body").css("background", "radial-gradient(#723883, #1e2b42)").removeAttr("class").addClass("tabl3");
             }
             if (gameId == gamesData[3].id) {
-                $("body").css("background", "radial-gradient(#833838, #421e1e)").removeAttr('class').addClass('tabl4');
+                $("body").css("background", "radial-gradient(#833838, #421e1e)").removeAttr("class").addClass("tabl4");
             }
         }
     }, [gameId]);
     useEffect(() => {
+        setTimeout(() => {
+            $(".tilesWrap li").hover(
+                function () {
+                    defaultClick.play();
+                },
+                function () {
+                    // play nothing when mouse leaves chip
+                }
+            );
+            $(".empty-slot i").hover(
+                function () {
+                    // console.log('hi');
+
+                    actionClick.play();
+                },
+                function () {
+                    // play nothing when mouse leaves chip
+                }
+            );
+            $(".betButtons").hover(
+                function () {
+                    // console.log('hi');
+
+                    chipHover.play();
+                },
+                function () {
+                    // play nothing when mouse leaves chip
+                }
+            );
+           
+            
+        }, 10);
+        
         if (gamesData.length && gameId != 0) {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
             //console.log(_data);
@@ -197,13 +273,13 @@ const BlackjackGame = () => {
         AppOrtion();
     }, [gamesData, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
-    if(_auth==null || !conn) {
-        return <Loader errcon={true}/>;
+    if (_auth == null || !conn) {
+        return <Loader errcon={true} />;
     }
     if (!gamesData || !userData) {
         return <Loader />;
     }
-   
+
     if (gameId == 0 || !gameData) {
         return (
             <div>
@@ -363,7 +439,7 @@ const BlackjackGame = () => {
                             <span className={player.bet ? (gameData.currentPlayer == pNumber ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber}>
                                 {!player?.nickname ? (
                                     <>
-                                        <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 ? "empty-slot noclick" : "empty-slot"} onClick={() => socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                        <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 ? "empty-slot noclick" : "empty-slot"} onClick={() => {clickFiller.play();socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}}>
                                             <i className="fas fa-user-plus"></i>
                                         </div>
                                     </>
@@ -380,7 +456,7 @@ const BlackjackGame = () => {
                                                     if (bet * 1000 <= userData.balance) {
                                                         return (
                                                             <span key={i}>
-                                                                <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                                                <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => {chipPlace.play();socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}}>
                                                                     {doCurrencyMil(bet * 1000)}
                                                                 </button>
                                                             </span>
@@ -388,7 +464,7 @@ const BlackjackGame = () => {
                                                     } else {
                                                         return (
                                                             <span key={i}>
-                                                                <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000} onClick={() => socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }))}>
+                                                                <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000}>
                                                                     {doCurrencyMil(bet * 1000)}
                                                                 </button>
                                                             </span>
@@ -408,7 +484,7 @@ const BlackjackGame = () => {
                                                                         className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
-                                                                        onClick={() => socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }))}
+                                                                        onClick={() => {chipPlace.play();socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }))}}
                                                                     >
                                                                         {doCurrencyMil(bet * 1000)}
                                                                     </button>
@@ -451,7 +527,7 @@ const BlackjackGame = () => {
                                                                         className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
-                                                                        onClick={() => socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }))}
+                                                                        onClick={() => {chipPlace.play();socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }))}}
                                                                     >
                                                                         {doCurrencyMil(bet * 1000)}
                                                                     </button>
@@ -544,6 +620,7 @@ const BlackjackGame = () => {
                                             {player.cards.map(function (card, i) {
                                                 return (
                                                     <span key={i} className={" animate__animated animate__slideInDown  cardImg"}>
+                                                        
                                                         <img className={player.isDouble && i == 2 ? "   isdouble  cardImg card" + (i + 1) : "  animate__animated cardImg card" + (i + 1)} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
                                                     </span>
                                                 );

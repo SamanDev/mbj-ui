@@ -1597,7 +1597,7 @@ transform-origin: top;
   transition: all 0.3s ease-in-out;
   
 }
-.tilesWrap li:hover button {
+.tilesWrap .li:hover button {
   transform: translateY(5px);
   opacity: 1;
 }
@@ -1608,7 +1608,7 @@ transform-origin: top;
   left: 0;
   opacity: 1;
 }
-.tilesWrap li:hover h2 {
+.tilesWrap .li:hover h2 {
   top: 0px;
   opacity: 0.6;
 }
