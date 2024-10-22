@@ -628,7 +628,7 @@ body {
 .modal.tiny *{
   font-size: 96% !important;
 }
-.myloading,.myloading *{
+.myloading,.myloading *:not(i){
   position: absolute !important;
   top: 0;
   bottom: 0;

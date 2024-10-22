@@ -1,10 +1,15 @@
 import React from 'react'
-import { Dimmer, Loader, Image, Segment } from 'semantic-ui-react'
+import { Dimmer, Loader, Icon,IconGroup, Segment } from 'semantic-ui-react'
 
-const LoaderExampleLoader = () => (
+const LoaderExampleLoader = (prop) => (
   <Segment basic className="myloading">
     <Dimmer active>
-      <Loader  size='huge' />
+      {prop.err ? <><IconGroup size='huge' style={{marginTop:'10%'}}>
+        <Icon color='grey' name='internet explorer' inverted />
+      <Icon size='big' color='red' name='dont' />
+      
+    </IconGroup><br/><br/><br/><br/>Connection Error!</>: <Loader  size='huge' />}
+      
     </Dimmer>
 
   </Segment>

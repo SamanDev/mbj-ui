@@ -8,7 +8,11 @@ const pathArr = loc.pathname.toString().split("/");
 
 if (pathArr.length == 3) {
     _auth = pathArr[1];
+    
 }
+//_auth = "farshad-HangOver2";
+//console.log(_auth);
+
 const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://${loc.hostname}:8080`;
 
 // (A) LOCK SCREEN ORIENTATION
@@ -131,7 +135,12 @@ const BlackjackGame = () => {
                 // Update kardan state
             }
             if (data.method == "connect") {
-                setUserData(data.theClient); // Update kardan state
+                if(data.theClient?.balance>=0){
+                    setUserData(data.theClient);
+                }else{
+                    _auth = null
+                }
+                 // Update kardan state
             }
             if (data.method == "timer") {
                 if (data.gameId == $("#gameId").text()) {
@@ -182,9 +191,13 @@ const BlackjackGame = () => {
         AppOrtion();
     }, [gamesData, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
+    if(_auth==null) {
+        return <Loader err={true}/>;
+    }
     if (!gamesData || !userData) {
         return <Loader />;
     }
+   
     if (gameId == 0 || !gameData) {
         return (
             <div>
