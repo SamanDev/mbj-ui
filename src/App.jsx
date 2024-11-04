@@ -577,7 +577,7 @@ const BlackjackGame = () => {
                                                     <div className="user-action-text">STAND</div>
                                                 </div>
                                                 <div className="user-action-box">
-                                                    <button className="user-action" id="hit" onClick={() => {$('.user-action').addClass('noclick-nohide');socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }))}}>
+                                                    <button className="user-action" id="hit" onClick={() => {socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }))}}>
                                                         <i className="fas fa-hand-pointer"></i>
                                                     </button>
                                                     <div className="user-action-text">HIT</div>
