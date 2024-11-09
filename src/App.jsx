@@ -442,7 +442,7 @@ const BlackjackGame = () => {
                         var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
 
                         return (
-                            <span className={player.bet ? (gameData.currentPlayer == pNumber && gameData.gameOn ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot"+pNumber}>
+                            <span className={player.bet ? (gameData.currentPlayer == pNumber && gameData.gameOn&& gameData.dealer.hiddencards.length > 0 ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot"+pNumber}>
                                 {!player?.nickname ? (
                                     <>
                                         <div className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 || (gameTimer < 2 && gameData.gameStart)? "empty-slot noclick" : "empty-slot"} onClick={() => { clickFiller.play();socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }))}}>
