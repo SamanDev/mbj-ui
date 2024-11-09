@@ -272,7 +272,7 @@ const BlackjackGame = () => {
             }
         }
         if ( gameId == 0) {
-           
+            setGameData(null)
                 setGameTimer(-1);
             
         }
