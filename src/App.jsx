@@ -363,8 +363,8 @@ const BlackjackGame = () => {
 
                 <div id="dealer">
                     <h1>DEALER</h1>
-                    {gameData.dealer?.sum && <div id="dealerSum">{gameData.dealer?.sum}</div>}
-                    {gameData.dealer?.cards && (
+                    {gameData.dealer?.sum>0 && <div id="dealerSum">{gameData.dealer?.sum}</div>}
+                    {gameData.dealer?.cards.length>0 && (
                         <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
                             <div className="visibleCards">
                                 {gameData.dealer?.cards.map(function (card, i) {
@@ -566,7 +566,7 @@ const BlackjackGame = () => {
                                                 </div>
                                             </>
                                         )}
-                                        {gameData.gameOn && gameData.currentPlayer == pNumber && player.nickname == userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
+                                        {gameData.gameOn  && gameData.dealer.hiddencards.length > 0&& gameData.currentPlayer == pNumber && player.nickname == userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
                                             <div className="user-action-container  animate__slideInUp animate__animated">
                                                 <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
 
@@ -637,7 +637,7 @@ const BlackjackGame = () => {
                                 )}
                                 <div id="players-timer-container">
                                     <svg className="players-timer">
-                                        <circle className={gameData.currentPlayer == pNumber && player?.nickname && gameData.gameOn && player?.sum < 21&&player?.bet > 0  && player.cards.length >= 2 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent"   />
+                                        <circle className={gameData.currentPlayer == pNumber && player?.nickname && gameData.gameOn && player?.sum < 21&&player?.bet > 0  && player.cards.length >= 2 && gameData.dealer.hiddencards.length > 0 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent"   />
                                     </svg>
                                 </div>
                             </span>
