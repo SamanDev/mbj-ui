@@ -361,9 +361,9 @@ const BlackjackGame = () => {
                     </div>
                 )}
 
-                <div id="dealer">
+                <div id="dealer"  className={gameData.dealer.cards.length > 1 ? "curdealer" : ""}>
                     <h1>DEALER</h1>
-                    {gameData.dealer?.sum>0 && <div id="dealerSum">{gameData.dealer?.sum}</div>}
+                    {gameData.dealer?.sum>0 && <div id="dealerSum" className={gameData.dealer?.sum>21?"result-lose result-bust":""}>{gameData.dealer?.sum}</div>}
                     {gameData.dealer?.cards.length>0 && (
                         <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
                             <div className="visibleCards">

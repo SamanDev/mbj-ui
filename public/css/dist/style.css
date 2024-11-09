@@ -770,6 +770,9 @@ body {
   transform: scale(1.2);
 
 }
+#dealer.curdealer{
+  transform: scale(1.1); 
+}
 .bets-side-win{
   color: chartreuse;
     font-size: 20px;
@@ -1175,7 +1178,8 @@ right: 90px;
   /* IE 10+ and Edge */
   user-select: none;
   /* Standard syntax */
-  
+  transform: scale(1);
+  transition: all .5s ease;
 }
 #dealer h1 {
   display: flex;
