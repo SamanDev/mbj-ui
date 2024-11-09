@@ -767,6 +767,8 @@ body {
 }
 .players.curplayer {
   z-index: 34;
+  transform: scale(1.2);
+
 }
 .bets-side-win{
   color: chartreuse;

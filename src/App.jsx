@@ -515,7 +515,7 @@ const BlackjackGame = () => {
                                                                         {doCurrencyMil(sidePPPlayer)}
                                                                     </button>
                                                                 ) : (
-                                                                    <button className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                    <button onClick={()=>$('#sidebetbtn').trigger('click')} className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
                                                                         Perfect
                                                                         <br />
                                                                         Pairs
@@ -555,7 +555,7 @@ const BlackjackGame = () => {
                                                                         {doCurrencyMil(side213layer)}
                                                                     </button>
                                                                 ) : (
-                                                                    <button className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                    <button onClick={()=>$('#sidebetbtn').trigger('click')}  className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
                                                                         21
                                                                         <br />+ 3
                                                                     </button>

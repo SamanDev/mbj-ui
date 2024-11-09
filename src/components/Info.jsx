@@ -23,7 +23,7 @@ const ModalExampleScrollingContent = (prop) => {
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       size='tiny'
-      trigger={<Button basic inverted  color="grey"  size='mini' style={{position:'relative',display:"block"}}   icon labelPosition='left'>
+      trigger={<Button basic inverted  color="grey"  size='mini' style={{position:'relative',display:"block"}} id="sidebetbtn"  icon labelPosition='left'>
                 <Icon name='info' />Side Bets</Button>}
     >
       
