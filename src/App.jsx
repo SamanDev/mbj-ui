@@ -167,8 +167,9 @@ const BlackjackGame = () => {
             const data = JSON.parse(event.data); // Parse kardan JSON daryafti
             //console.log("Game data received: ", data);
             if (data.method == "tables") {
+                if (data.gameId == gameId || gameId == 0) {
                 setGamesData(data.games);
-
+                }
                 // Update kardan state
             }
             if (data.method == "connect") {
@@ -182,7 +183,7 @@ const BlackjackGame = () => {
                 // Update kardan state
             }
             if (data.method == "timer") {
-                if (data.gameId == $("#gameId").text()) {
+                if (data.gameId == gameId) {
                     if(data.sec==5){
                         timerRunningOut.play();
                     }
@@ -190,7 +191,7 @@ const BlackjackGame = () => {
                 }
             }
             if (data.method == "deal") {
-                if (data.gameId == $("#gameId").text()) {
+                if (data.gameId == gameId) {
                     dealingSound.play()
                 }
             }
