@@ -183,7 +183,7 @@ const BlackjackGame = () => {
                 // Update kardan state
             }
             if (data.method == "timer") {
-                if (data.gameId == gameId) {
+                if (data.gameId == $("#gameId").text()) {
                     if(data.sec==5){
                         timerRunningOut.play();
                     }
@@ -191,7 +191,7 @@ const BlackjackGame = () => {
                 }
             }
             if (data.method == "deal") {
-                if (data.gameId == gameId) {
+                if (data.gameId == $("#gameId").text()) {
                     dealingSound.play()
                 }
             }
