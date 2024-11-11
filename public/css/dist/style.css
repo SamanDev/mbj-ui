@@ -45,6 +45,11 @@ body {
   opacity: 0;
   transition: 400ms;
 }
+#dark-overlay.curplayer {
+  
+  opacity: 1;
+  
+}
 
 :root {
   --info-rules-width: -492px;
@@ -768,7 +773,7 @@ body {
 .players.curplayer {
   z-index: 34;
   transform: scale(1.2);
-
+  background-color:rgb(0, 0, 0)
 }
 #dealer.curdealer{
   transform: scale(1.1); 
@@ -928,6 +933,7 @@ body {
   color: #f20000;
   border: 2px solid #f20000;
   text-shadow: 0 0 4px #8e0000;
+  
 }
 
 .result-draw {
@@ -941,13 +947,15 @@ body {
   color: #00de00;
   text-shadow: 0 0 4px #007a00;
 }
-
+.player-result.result-draw,.player-result.result-lose{
+font-size: 13px;
+}
 .result-blackjack {
   border: 2px solid gold;
   color: gold;
   text-shadow: 0 0 4px #9b7300;
-  font-size: 17px;
 }
+
 
 .player-coin {
   position: absolute;
@@ -1032,12 +1040,12 @@ i {
     top: -50px;
     transition: 500ms;
 }
-.players.result-lose.result-bust{
-  opacity: .6;
+.players.result-bust{
   transform: scale(.8);
   transition: all 0.5s ease-in-out;
-  transition-delay: 2.5s;
+  transition-delay: .5s;
 }
+
 
 .cardImg {
   position: absolute;
@@ -1047,9 +1055,11 @@ i {
   width: 90px;
   height: 135px;
   transform-origin: top left;
-  transition: 500ms;
 }
-
+span.cardImg {
+  
+  transform-origin: left center;
+}
 .card1 {
   z-index: 1;
 }
@@ -1065,10 +1075,12 @@ i {
   margin-left: 40px;
   top: -176px;
 }
-.isdouble.card3 {
+.isdouble img {
  
   transform: rotate(-90deg) !important;
   transform-origin: bottom;
+  margin-left: 70px;
+
   
 }
 .card4 {
@@ -1510,6 +1522,8 @@ right: 90px;
   height: 135px;
   perspective: 1000px;
   transition: 500ms;
+  
+
 }
 
 .flip-card-inner {
@@ -1519,6 +1533,8 @@ right: 90px;
   text-align: center;
   transition: transform 0.8s;
   transform-style: preserve-3d;
+  transform: rotateY(-180deg);
+  transition-delay: 1s;
 }
 
 .flip-card-front, .flip-card-back {
@@ -1562,17 +1578,18 @@ transform-origin: top;
   top: 30px;
   right: 10px;
   transition: all 0.3s ease-in-out;
+  color: gold;
 }
 .tilesWrap li h3 {
-  font-size: 20px;
-  color: #b7b7b7;
+  font-size: 50px;
+  color: #fff;
   margin-bottom: 15px;
   margin-top: 5px;
 
 }
 .tilesWrap li p {
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 18px;
+  line-height: 28px;
   color: #b7b7b7;
   margin-top: 5px;
 }
@@ -1708,4 +1725,8 @@ margin: 35%;
 @keyframes portrait {
   0% { transform: rotate(90deg) }
   100% { transform: rotate(0deg) }
+}
+.last *{
+  animation-duration: 0s !important;
+  transition: 0ms !important;
 }
