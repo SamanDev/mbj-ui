@@ -373,21 +373,22 @@ const BlackjackGame = () => {
             <div className={last ? "game-room last" : "game-room"} id="scale">
                 <div id="table-graphics"></div>
 
-                <Info setGameId={setGameId} gameId={gameId} />
+                <Info setGameId={setGameId} gameId={gameId} totalBetAll={_totalBetAll} totalWinAll={_totalWinAll} />
                 <div id="balance-bet-box">
                     <div className="balance-bet">
                         Balance
                         <div id="balance">{doCurrency(userData.balance)}</div>
                     </div>
                     <div className="balance-bet">
-                        Total Bet<br/>
-                       {_totalBet>0 && <><span id="total-bet">{doCurrencyMil(_totalBet)}</span> - </>} <small id="total-bet">{doCurrencyMil(_totalBetAll)}</small>
+                        Yout Bets
+                        <div id="total-bet">{doCurrencyMil(_totalBet)}</div>
                     </div>
                     <div className="balance-bet">
-                        Total Win<br/>
-                        {_totalWin>0&&<><span id="total-bet">{doCurrencyMil(_totalWin)}</span> - </>} <small id="total-bet">{doCurrencyMil(_totalWinAll)}</small>
-                   
+                        Your Wins
+                        <div id="total-bet">{doCurrencyMil(_totalWin)}</div>
+                    
                     </div>
+                   
                     {localStorage.getItem(gameId) && (
                         <div
                             className="balance-bet"
@@ -405,13 +406,14 @@ const BlackjackGame = () => {
                 <div id="volume-button">
                     <i className="fas fa-volume-up"></i>
                 </div>
-                {gameTimer >= 0 && !gameData.gameOn && (
-                    <div id="deal-start-label" className="hide-element">
-                        <p>
+                {gameTimer >= 1 && !gameData.gameOn && gameData.gameStart && (
+                    <div id="deal-start-label" >
+                        <p className="animate__bounceIn animate__animated animate__infinite" style={{animationDuration:'1s'}}>
                             Waiting for bets <span>{gameTimer}</span>
                         </p>
                     </div>
                 )}
+           
 
                 <div id="dealer" className={gameData.dealer.cards.length > 1 && last === false ? "curdealer" : ""}>
                     <h1>DEALER</h1>

@@ -1,6 +1,21 @@
 import React from "react";
 import { ModalContent, Button, Icon, Modal } from "semantic-ui-react";
 
+const doCurrency = (value) => {
+  var val = value?.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+  return val;
+};
+const doCurrencyMil = (value, fix) => {
+  var val;
+  if (value < 1000000) {
+      val = doCurrency(parseFloat(value / 1000).toFixed(fix || fix === 0 ? fix : 0)) + "K";
+  } else {
+      val = doCurrency(parseFloat(value / 1000000).toFixed(fix || fix === 0 ? fix : 1)) + "M";
+      val = val.replace(".0", "");
+  }
+  if(value===0){return 0}
+  return val;
+};
 const ModalExampleScrollingContent = (prop) => {
     const [open, setOpen] = React.useState(false);
 
@@ -58,6 +73,16 @@ const ModalExampleScrollingContent = (prop) => {
                     </article>
                 </ModalContent>
             </Modal>
+            <div id="balance-bet-box" style={{top:80, right: -33}}>
+            <div className="balance-bet">
+                        Total Bet
+                       <div id="total-bet">{doCurrencyMil(prop.totalBetAll)}</div>
+                    </div>
+                    <div className="balance-bet">
+                        Total Win
+                        <div id="total-bet">{doCurrencyMil(prop.totalWinAll)}</div>
+                   
+                    </div></div>
         </span>
     );
 };
