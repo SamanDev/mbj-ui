@@ -33,7 +33,7 @@ const ModalExampleScrollingContent = (prop) => {
                 trigger={
                     <Button basic inverted color="grey" size="mini" style={{ position: "relative", display: "block" }} id="sidebetbtn" icon labelPosition="left">
                         <Icon name="info" />
-                        SIDE BETS INFO
+                        SIDE BETS
                     </Button>
                 }
             >
