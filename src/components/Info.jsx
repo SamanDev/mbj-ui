@@ -33,7 +33,7 @@ const ModalExampleScrollingContent = (prop) => {
                 trigger={
                     <Button basic inverted color="grey" size="mini" style={{ position: "relative", display: "block" }} id="sidebetbtn" icon labelPosition="left">
                         <Icon name="info" />
-                        Side Bets
+                        SIDE BETS INFO
                     </Button>
                 }
             >
@@ -76,11 +76,11 @@ const ModalExampleScrollingContent = (prop) => {
             <div id="balance-bet-box" style={{top:80, right: -33}}>
             <div className="balance-bet">
                         Total Bet
-                       <div id="total-bet">{doCurrencyMil(prop.totalBetAll)}</div>
+                       <div id="total-bet">{doCurrency(prop.totalBetAll)}</div>
                     </div>
                     <div className="balance-bet">
                         Total Win
-                        <div id="total-bet">{doCurrencyMil(prop.totalWinAll)}</div>
+                        <div id="total-bet">{doCurrency(prop.totalWinAll)}</div>
                    
                     </div></div>
         </span>

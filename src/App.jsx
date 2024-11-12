@@ -345,9 +345,9 @@ const BlackjackGame = () => {
                                 </h2>
                                 <h3>{game.id}</h3>
                                 <p>
-                                    Min Bet: {doCurrencyMil(game.min * 1000)}
+                                    Min Bet: {doCurrency(game.min * 1000)}
                                     <br />
-                                    Max Bet: {doCurrencyMil(game.min * 10000)}
+                                    Max Bet: {doCurrency(game.min * 10000)}
                                 </p>
                                 <button>Join Now</button>
                             </li>
@@ -390,11 +390,11 @@ const BlackjackGame = () => {
                     </div>
                     <div className="balance-bet">
                         Yout Bets
-                        <div id="total-bet">{doCurrencyMil(_totalBet)}</div>
+                        <div id="total-bet">{doCurrency(_totalBet)}</div>
                     </div>
                     <div className="balance-bet">
                         Your Wins
-                        <div id="total-bet">{doCurrencyMil(_totalWin)}</div>
+                        <div id="total-bet">{doCurrency(_totalWin)}</div>
                     
                     </div>
                    
