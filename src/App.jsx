@@ -135,7 +135,7 @@ let defaultClick = new Howl({
 });
 let clickFiller = new Howl({
     src: ["/sounds/click_filler.mp3"],
-    volume: 0.1,
+    volume: 0.3,
 });
 let timerRunningOut = new Howl({
     src: ["/sounds/timer_running_out.mp3"],
@@ -196,6 +196,12 @@ const BlackjackGame = () => {
                         var _data = data.games.filter((game) => game?.id === data.gameId)[0];
                         localStorage.setItem(data.gameId, JSON.stringify(_data));
                     }, 3000);
+                }
+                if (data.cur) {
+                    var _data = data.games.filter((game) => game?.id === data.gameId)[0];
+                    if(_data.gameOn && _data.dealer.hiddencards.length > 0 && _data.players[_data.currentPlayer]?.nickname === $("#nicknameId").text() && _data.players[_data.currentPlayer]?.cards.length >= 2 && _data.players[_data.currentPlayer]?.sum < 21){
+                        clickFiller.play();
+                    }
                 }
             }
             if (data.method === "connect") {
@@ -278,7 +284,7 @@ const BlackjackGame = () => {
                     // play nothing when mouse leaves chip
                 }
             );
-            $(".betButtons").hover(
+            $(".betButtons,.user-action").hover(
                 function () {
                     // console.log('hi');
 
@@ -294,6 +300,7 @@ const BlackjackGame = () => {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
             //console.log(_data);
             setGameDataLive(_data);
+            
             if (!last) {
                 setGameData(_data);
             }
@@ -369,9 +376,11 @@ const BlackjackGame = () => {
     _totalBetAll = _totalBetAll+ sbetsAll.reduce((a, b) => a + (b["amount"] || 0), 0);
     _totalWinAll = _totalWinAll+ sbetsAll.reduce((a, b) =>  a + (b["win"] || 0), 0);
     return (
-        <div>
-            <div className={last ? "game-room last" : "game-room"} id="scale">
+        <>
+            <span id="dark-overlay" className={gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.players[gameData.currentPlayer]?.nickname === userData?.nickname && gameData.players[gameData.currentPlayer]?.cards.length >= 2 && gameData.players[gameData.currentPlayer]?.sum < 21 ? "curplayer" : ""}></span>
+            <div><div className={last ? "game-room last" : "game-room"} id="scale">
                 <div id="table-graphics"></div>
+                
 
                 <Info setGameId={setGameId} gameId={gameId} totalBetAll={_totalBetAll} totalWinAll={_totalWinAll} />
                 <div id="balance-bet-box">
@@ -501,8 +510,7 @@ const BlackjackGame = () => {
 
                         return (
                             <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 && last === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
-                                <div id="dark-overlay" className={gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.currentPlayer === pNumber && player.nickname === userData.nickname && player.cards.length >= 2 && player.sum < 21 ? "curplayer" : _resCoinClass}></div>
-
+                                
                                 {!player?.nickname ? (
                                     <>
                                         <div
@@ -654,6 +662,7 @@ const BlackjackGame = () => {
                                                         id="stand"
                                                         onClick={() => {
                                                             $(".user-action").addClass("noclick-nohide");
+                                                            actionClick.play();
                                                             socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }));
                                                         }}
                                                     >
@@ -666,6 +675,7 @@ const BlackjackGame = () => {
                                                         className="user-action"
                                                         id="hit"
                                                         onClick={() => {
+                                                            actionClick.play();
                                                             socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }));
                                                         }}
                                                     >
@@ -680,6 +690,7 @@ const BlackjackGame = () => {
                                                             id="doubleDown"
                                                             onClick={() => {
                                                                 $(".user-action").addClass("noclick-nohide");
+                                                                actionClick.play();
                                                                 socket.send(JSON.stringify({ method: "double", gameId: gameData.id, seat: pNumber }));
                                                             }}
                                                         >
@@ -741,8 +752,8 @@ const BlackjackGame = () => {
                         );
                     })}
                 </div>
-            </div>
-        </div>
+            </div><span id="nicknameId" style={{display:"none"}}>{userData.nickname}</span>
+            </div></>
     );
 };
 
