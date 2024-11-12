@@ -500,8 +500,8 @@ const BlackjackGame = () => {
                         }
                         var _renge = [gameData.min];
                         _renge.push(_renge[0] * 2);
-                        _renge.push(_renge[0] * 5);
-                        _renge.push(_renge[0] * 10);
+                        _renge.push(_renge[0] * 4);
+                        _renge.push(_renge[0] * 8);
                         var sidePP = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "PerfectPer");
                         var sidePPPlayer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
 
