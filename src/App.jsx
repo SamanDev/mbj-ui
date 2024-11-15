@@ -405,7 +405,7 @@ const BlackjackGame = () => {
                                 setLast(true);
                             }}
                             onMouseLeave={() => {
-                                //setLast(false);
+                                setLast(false);
                             }}
                         >
                             Show Last Hand
