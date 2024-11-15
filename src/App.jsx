@@ -300,7 +300,7 @@ const BlackjackGame = () => {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
             //console.log(_data);
             setGameDataLive(_data);
-            
+            $('#decision').show();
             if (!last) {
                 setGameData(_data);
             }
@@ -653,7 +653,7 @@ const BlackjackGame = () => {
                                             </>
                                         )}
                                         {gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.currentPlayer === pNumber && player.nickname === userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
-                                            <div className="user-action-container  animate__slideInUp animate__animated">
+                                            <div id="decision" className="user-action-container  animate__slideInUp animate__animated">
                                                 <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
 
                                                 <div className="user-action-box">
@@ -661,6 +661,7 @@ const BlackjackGame = () => {
                                                         className="user-action"
                                                         id="stand"
                                                         onClick={() => {
+                                                            $('#decision').hide();
                                                             $(".user-action").addClass("noclick-nohide");
                                                             actionClick.play();
                                                             socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }));
@@ -675,6 +676,7 @@ const BlackjackGame = () => {
                                                         className="user-action"
                                                         id="hit"
                                                         onClick={() => {
+                                                            $('#decision').hide();
                                                             actionClick.play();
                                                             socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }));
                                                         }}
@@ -689,6 +691,7 @@ const BlackjackGame = () => {
                                                             className="user-action"
                                                             id="doubleDown"
                                                             onClick={() => {
+                                                                $('#decision').hide();
                                                                 $(".user-action").addClass("noclick-nohide");
                                                                 actionClick.play();
                                                                 socket.send(JSON.stringify({ method: "double", gameId: gameData.id, seat: pNumber }));
