@@ -1079,6 +1079,8 @@ span.cardImg {
  
   transform: rotate(-90deg) !important;
   transform-origin: bottom;
+  -webkit-transform: rotate(-90deg) !important;
+  -webkit-transform-origin: bottom;
   margin-left: 70px;
 
   
@@ -1245,7 +1247,7 @@ right: 90px;
 #bets-container {
   position: absolute;
  
-  height: 340px;
+  height: 270px;
   margin: 0 auto;
   bottom: 90px;
   left: 50%;
