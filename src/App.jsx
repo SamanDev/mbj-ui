@@ -30,7 +30,9 @@ const doCurrencyMil = (value, fix) => {
         val = doCurrency(parseFloat(value / 1000000).toFixed(fix || fix === 0 ? fix : 1)) + "M";
         val = val.replace(".0", "");
     }
-    if(value===0){return 0}
+    if (value === 0) {
+        return 0;
+    }
     return val;
 };
 const haveSideBet = (sideBets, nickname, seat, mode) => {
@@ -148,7 +150,72 @@ let timerRunningOut = new Howl({
 // let youLose = new Howl({
 //   src: ['/sounds/you_lose.mp3']
 // });
+function getSum(pNumber) {
+    var mysum = 0;
+    var haveAce = false;
+    $("#slot" + pNumber)
+        .find(".player-cards")
+        .find("img:visible")
+        .each(function () {
+            var _val = $(this).attr("val");
+            if (typeof _val === "object" && _val !== null) {
+                haveAce = true;
+                _val = _val[0];
+            }
+            
+            mysum = mysum + parseInt(_val);
+        });
+        if (haveAce) {
+            if (mysum + 10 <= 21) {
+                mysum = mysum + 10;
+            }
+        }
+    return mysum;
+}
 
+function animateNum(){
+    $('.counter').each(function() {
+        var $this = $(this),
+            countTo = $this.attr('data-count'),
+            countFrom= $this.attr('start-num')?$this.attr('start-num'):parseInt($this.text().replace(/,/g,""));
+            
+            if(countTo!=countFrom && !$this.hasClass('doing')) {
+                $this.attr('start-num',countFrom);
+            // $this.addClass("doing");
+
+        $({ countNum: countFrom}).animate({
+          countNum: countTo
+        },
+      
+        {
+      
+          duration: 400,
+          easing:'linear',
+          
+           step: function() {
+             //$this.attr('start-num',Math.floor(this.countNum));
+             $this.text(doCurrency(Math.floor(this.countNum)));
+           },
+          complete: function() {
+            $this.text(doCurrency(this.countNum));
+            $this.attr('start-num',Math.floor(this.countNum));
+            //$this.removeClass("doing");
+            //alert('finished');
+          }
+      
+        });  
+        
+        
+    }else{
+        if($this.hasClass('doing')) {
+            $this.attr('start-num',countFrom);
+        $this.removeClass("doing");
+        }else{
+            $this.attr('start-num',countFrom);
+        }
+    }
+      });
+}
 const BlackjackGame = () => {
     var _countBet = 0;
 
@@ -182,13 +249,10 @@ const BlackjackGame = () => {
             const data = JSON.parse(event.data); // Parse kardan JSON daryafti
             //console.log("Game data received: ", data);
             if (data.method === "tables") {
-                
                 setGamesDataLive(data.games);
                 if (data.gameId === $("#gameId").text() || $("#gameId").text() === "") {
                     setGamesData(data.games);
 
-                   
-                    
                     // Update kardan state
                 }
                 if (data.last) {
@@ -199,10 +263,11 @@ const BlackjackGame = () => {
                 }
                 if (data.cur) {
                     var _data = data.games.filter((game) => game?.id === data.gameId)[0];
-                    if(_data.gameOn && _data.dealer.hiddencards.length > 0 && _data.players[_data.currentPlayer]?.nickname === $("#nicknameId").text() && _data.players[_data.currentPlayer]?.cards.length >= 2 && _data.players[_data.currentPlayer]?.sum < 21){
+                    if (_data.gameOn && _data.dealer.hiddencards.length > 0 && _data.players[_data.currentPlayer]?.nickname === $("#nicknameId").text() && _data.players[_data.currentPlayer]?.cards.length >= 2 && _data.players[_data.currentPlayer]?.sum < 21) {
                         clickFiller.play();
                     }
                 }
+                
             }
             if (data.method === "connect") {
                 if (data.theClient?.balance >= 0) {
@@ -226,7 +291,9 @@ const BlackjackGame = () => {
                 if (data.gameId === $("#gameId").text()) {
                     dealingSound.play();
                 }
+              
             }
+           
         };
 
         // Event onclose baraye vaghti ke websocket baste mishe
@@ -265,6 +332,25 @@ const BlackjackGame = () => {
         }
     }, [gameId, last, gamesData]);
     useEffect(() => {
+        if (gamesData.length && gameId !== 0) {
+            var _data = gamesData.filter((game) => game?.id === gameId)[0];
+            //console.log(_data);
+            setGameDataLive(_data);
+            
+            $("#decision").show();
+            if (!last) {
+                setGameData(_data);
+            }
+            if (_data.dealer?.cards.length > 1) {
+                setGameTimer(-1);
+            }
+        }
+        if (gameId === 0) {
+            setGameData(null);
+            setGamesData(gamesDataLive);
+            setGameTimer(-1);
+        }
+        AppOrtion();
         setTimeout(() => {
             $(".tilesWrap li").hover(
                 function () {
@@ -295,25 +381,9 @@ const BlackjackGame = () => {
                 }
             );
         }, 10);
-
-        if (gamesData.length && gameId !== 0) {
-            var _data = gamesData.filter((game) => game?.id === gameId)[0];
-            //console.log(_data);
-            setGameDataLive(_data);
-            $('#decision').show();
-            if (!last) {
-                setGameData(_data);
-            }
-            if (_data.dealer?.cards.length > 1) {
-                setGameTimer(-1);
-            }
-        }
-        if (gameId === 0) {
-            setGameData(null);
-            setGamesData(gamesDataLive)
-            setGameTimer(-1);
-        }
-        AppOrtion();
+        setTimeout(() => {
+            animateNum()
+        }, 10);
     }, [gamesData, gameId, last]);
     useEffect(() => {
         if (last) {
@@ -321,6 +391,8 @@ const BlackjackGame = () => {
         } else {
             setGameData(gameDataLive);
         }
+       
+       
     }, [last, gameDataLive, gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
     if (_auth === null || !conn) {
@@ -357,406 +429,407 @@ const BlackjackGame = () => {
             </div>
         );
     }
-    const bets = gameData.players.filter((player) => player?.nickname === userData.nickname && player?.bet>0)
+    const bets = gameData.players.filter((player) => player?.nickname === userData.nickname && player?.bet > 0);
     _countBet = bets.length;
-    if(_countBet>0){
-    _totalBet = bets.reduce((a, b) => a + (b["bet"] || 0), 0);
-    _totalWin = bets.reduce((a, b) =>  a + (b["win"] || 0), 0);
+    if (_countBet > 0) {
+        _totalBet = bets.reduce((a, b) => a + (b["bet"] || 0), 0);
+        _totalWin = bets.reduce((a, b) => a + (b["win"] || 0), 0);
     }
-    const sbets = gameData.sideBets.filter((player) => player?.nickname === userData.nickname && player?.amount>0)
-    _totalBet = _totalBet+ sbets.reduce((a, b) => a + (b["amount"] || 0), 0);
-    _totalWin = _totalWin+ sbets.reduce((a, b) =>  a + (b["win"] || 0), 0);
-    
-    const betsAll = gameData.players.filter((player) => player?.bet>0)
-   
+    const sbets = gameData.sideBets.filter((player) => player?.nickname === userData.nickname && player?.amount > 0);
+    _totalBet = _totalBet + sbets.reduce((a, b) => a + (b["amount"] || 0), 0);
+    _totalWin = _totalWin + sbets.reduce((a, b) => a + (b["win"] || 0), 0);
+
+    const betsAll = gameData.players.filter((player) => player?.bet > 0);
+
     _totalBetAll = betsAll.reduce((a, b) => a + (b["bet"] || 0), 0);
-    _totalWinAll = betsAll.reduce((a, b) =>  a + (b["win"] || 0), 0);
-    
-    const sbetsAll = gameData.sideBets.filter((player) => player?.amount>0)
-    _totalBetAll = _totalBetAll+ sbetsAll.reduce((a, b) => a + (b["amount"] || 0), 0);
-    _totalWinAll = _totalWinAll+ sbetsAll.reduce((a, b) =>  a + (b["win"] || 0), 0);
+    _totalWinAll = betsAll.reduce((a, b) => a + (b["win"] || 0), 0);
+
+    const sbetsAll = gameData.sideBets.filter((player) => player?.amount > 0);
+    _totalBetAll = _totalBetAll + sbetsAll.reduce((a, b) => a + (b["amount"] || 0), 0);
+    _totalWinAll = _totalWinAll + sbetsAll.reduce((a, b) => a + (b["win"] || 0), 0);
     return (
         <>
             <span id="dark-overlay" className={gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.players[gameData.currentPlayer]?.nickname === userData?.nickname && gameData.players[gameData.currentPlayer]?.cards.length >= 2 && gameData.players[gameData.currentPlayer]?.sum < 21 ? "curplayer" : ""}></span>
-            <div><div className={last ? "game-room last" : "game-room"} id="scale">
-                <div id="table-graphics"></div>
-                
+            <div>
+                <div className={last ? "game-room last" : "game-room"} id="scale">
+                    <div id="table-graphics"></div>
 
-                <Info setGameId={setGameId} gameId={gameId} totalBetAll={_totalBetAll} totalWinAll={_totalWinAll} />
-                <div id="balance-bet-box">
-                    <div className="balance-bet">
-                        Balance
-                        <div id="balance">{doCurrency(userData.balance)}</div>
-                    </div>
-                    <div className="balance-bet">
-                        Yout Bets
-                        <div id="total-bet">{doCurrency(_totalBet)}</div>
-                    </div>
-                    <div className="balance-bet">
-                        Your Wins
-                        <div id="total-bet">{doCurrency(_totalWin)}</div>
-                    
-                    </div>
-                   
-                    {localStorage.getItem(gameId) && (
-                        <div
-                            className="balance-bet"
-                            onMouseEnter={() => {
-                                setLast(true);
-                            }}
-                            onMouseLeave={() => {
-                                setLast(false);
-                            }}
-                        >
-                            Show Last Hand
+                    <Info setGameId={setGameId} gameId={gameId} totalBetAll={_totalBetAll} totalWinAll={_totalWinAll} />
+                    <div id="balance-bet-box">
+                        <div className="balance-bet">
+                            Balance
+                            <div id="balance" className="counter" data-count={userData.balance}></div>
                         </div>
-                    )}
-                </div>
-                <div id="volume-button">
-                    <i className="fas fa-volume-up"></i>
-                </div>
-                {gameTimer >= 1 && !gameData.gameOn && gameData.gameStart && (
-                    <div id="deal-start-label" >
-                        <p className="animate__bounceIn animate__animated animate__infinite" style={{animationDuration:'1s'}}>
-                            Waiting for bets <span>{gameTimer}</span>
-                        </p>
-                    </div>
-                )}
-           
-
-                <div id="dealer" className={gameData.dealer.cards.length > 1 && last === false ? "curdealer" : ""}>
-                    <h1>DEALER</h1>
-                    {gameData.dealer?.sum > 0 && (
-                        <div id="dealerSum" className={gameData.dealer?.sum > 21 ? "result-lose result-bust" : ""}>
-                            {gameData.dealer?.sum}
+                        <div className="balance-bet">
+                            Yout Bets
+                            <div id="total-bet" className="counter" data-count={_totalBet}></div>
                         </div>
-                    )}
-                    {gameData.dealer?.cards.length > 0 && (
-                        <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
-                            <div className="visibleCards">
-                                {gameData.dealer?.cards.map(function (card, i) {
-                                    var _dClass = "animate__flipInY";
-                                    if (i === 1) {
-                                        _dClass = "animate__flipInY";
-                                    }
-                                    return (
-                                        <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
-                                            <img className={" animate__animated dealerCardImg"} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
-                                        </span>
-                                    );
-                                })}
-                                {gameData.dealer?.cards.length === 1 && (
-                                    <>
-                                        {gameData.dealer?.hiddencards.map(function (card, i) {
-                                            var _dClass = "animate__flipInY";
+                        <div className="balance-bet">
+                            Your Wins
+                            <div id="total-bet" className="counter" data-count={_totalWin}></div>
+                        </div>
 
-                                            return (
-                                                <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
-                                                    <img className={" animate__animated dealerCardImg"} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
-                                                </span>
-                                            );
-                                        })}
-                                    </>
-                                )}
+                        {localStorage.getItem(gameId) && (
+                            <div
+                                className="balance-bet"
+                                onMouseEnter={() => {
+                                    setLast(true);
+                                }}
+                                onMouseLeave={() => {
+                                    setLast(false);
+                                }}
+                            >
+                                Show Last Hand
                             </div>
+                        )}
+                    </div>
+                    <div id="volume-button">
+                        <i className="fas fa-volume-up"></i>
+                    </div>
+                    {gameTimer >= 1 && !gameData.gameOn && gameData.gameStart && (
+                        <div id="deal-start-label">
+                            <p className="animate__bounceIn animate__animated animate__infinite" style={{ animationDuration: "1s" }}>
+                                Waiting for bets <span>{gameTimer}</span>
+                            </p>
                         </div>
                     )}
-                </div>
 
-                <div id="players-container">
-                    {gameData.players.map(function (player, pNumber) {
-                        var _resClass = "";
-                        var _resCoinClass = "animate__slideInDown";
-                        var _res = "";
-                        if (gameData.dealer?.sum >= 17 && gameData.dealer?.sum <= 21 && gameData.dealer?.hasLeft) {
-                            if (gameData.dealer?.sum > player.sum) {
-                                _res = "LOSE";
-                                _resClass = "result-lose";
-                                _resCoinClass = "animate__delay-1s animate__backOutUp animate__repeat-3";
+                    <div id="dealer" className={gameData.dealer.cards.length > 1 && last === false ? "curdealer" : ""}>
+                        <h1>DEALER</h1>
+                        {gameData.dealer?.sum > 0 && (
+                            <div id="dealerSum" className={gameData.dealer?.sum > 21 ? "result-lose result-bust counter" : "counter"}  data-count={gameData.dealer?.sum}>
+                                
+                            </div>
+                        )}
+                        {gameData.dealer?.cards.length > 0 && (
+                            <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
+                                <div className="visibleCards">
+                                    {gameData.dealer?.cards.map(function (card, i) {
+                                        var _dClass = "animate__flipInY";
+                                        if (i === 1) {
+                                            _dClass = "animate__flipInY";
+                                        }
+                                        return (
+                                            <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
+                                                <img className={" animate__animated dealerCardImg"} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                            </span>
+                                        );
+                                    })}
+                                    {gameData.dealer?.cards.length === 1 && (
+                                        <>
+                                            {gameData.dealer?.hiddencards.map(function (card, i) {
+                                                var _dClass = "animate__flipInY";
+
+                                                return (
+                                                    <span key={i} className={_dClass + " animate__animated   dealerCardImg"}>
+                                                        <img className={" animate__animated dealerCardImg"} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                                    </span>
+                                                );
+                                            })}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div id="players-container">
+                        {gameData.players.map(function (player, pNumber) {
+                            var _resClass = "";
+                            var _resCoinClass = "animate__slideInDown";
+                            var _res = "";
+                            if (gameData.dealer?.sum >= 17 && gameData.dealer?.sum <= 21 && gameData.dealer?.hasLeft) {
+                                if (gameData.dealer?.sum > player.sum) {
+                                    _res = "LOSE";
+                                    _resClass = "result-lose";
+                                    _resCoinClass = "animate__delay-1s animate__backOutUp animate__repeat-3";
+                                }
+                                if (gameData.dealer?.sum < player.sum) {
+                                    _res = "WIN";
+                                    _resClass = "result-win";
+                                    _resCoinClass = "animate__delay-2s animate__bounceOutDown";
+                                }
+                                if (gameData.dealer?.sum === player.sum) {
+                                    _res = "DRAW";
+                                    _resClass = "result-draw";
+                                }
                             }
-                            if (gameData.dealer?.sum < player.sum) {
+                            if (gameData.dealer?.sum > 21 && gameData.dealer?.hasLeft) {
                                 _res = "WIN";
                                 _resClass = "result-win";
                                 _resCoinClass = "animate__delay-2s animate__bounceOutDown";
                             }
-                            if (gameData.dealer?.sum === player.sum) {
-                                _res = "DRAW";
-                                _resClass = "result-draw";
+                            if (player.sum > 21) {
+                                _res = "🔥";
+                                _resClass = "result-lose result-bust";
+                                _resCoinClass = "animate__delay-1s animate__bounceOutUp animate__repeat-3";
                             }
-                        }
-                        if (gameData.dealer?.sum > 21 && gameData.dealer?.hasLeft) {
-                            _res = "WIN";
-                            _resClass = "result-win";
-                            _resCoinClass = "animate__delay-2s animate__bounceOutDown";
-                        }
-                        if (player.sum > 21) {
-                            _res = "🔥";
-                            _resClass = "result-lose result-bust";
-                            _resCoinClass = "animate__delay-1s animate__bounceOutUp animate__repeat-3";
-                        }
-                        if (player.blackjack && gameData.dealer?.sum !== 21) {
-                            _res = "BJ";
-                            _resClass = "result-blackjack";
-                        }
-                        var _renge = [gameData.min];
-                        _renge.push(_renge[0] * 2);
-                        _renge.push(_renge[0] * 5);
-                        //_renge.push(_renge[0] * 8);
-                        var sidePP = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "PerfectPer");
-                        var sidePPPlayer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
+                            if (player.blackjack && gameData.dealer?.sum !== 21) {
+                                _res = "BJ";
+                                _resClass = "result-blackjack";
+                            }
+                            var _renge = [gameData.min];
+                            _renge.push(_renge[0] * 2);
+                            _renge.push(_renge[0] * 5);
+                            //_renge.push(_renge[0] * 8);
+                            var sidePP = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "PerfectPer");
+                            var sidePPPlayer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
 
-                        var side213 = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "21+3");
-                        var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
+                            var side213 = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "21+3");
+                            var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
 
-                        return (
-                            <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 && last === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
-                                
-                                {!player?.nickname ? (
-                                    <>
-                                        <div
-                                            className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 || (gameTimer < 2 && gameData.gameStart) ? "empty-slot noclick" : "empty-slot"}
-                                            onClick={() => {
-                                                clickFiller.play();
-                                                socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }));
-                                            }}
-                                        >
-                                            <i className="fas fa-user-plus"></i>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        {!gameData.gameOn && !player.bet && player.nickname === userData.nickname && (
-                                            <div id="bets-container">
-                                                <span className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                    <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip"} onClick={() => socket.send(JSON.stringify({ method: "leave", gameId: gameData.id, seat: pNumber }))}>
-                                                        X
-                                                    </button>
-                                                </span>
-                                                {_renge.map(function (bet, i) {
-                                                    if (bet * 1000 <= userData.balance) {
-                                                        return (
-                                                            <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                                <button
-                                                                    className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"
-                                                                    id={"chip" + i}
-                                                                    value={bet * 1000}
-                                                                    onClick={() => {
-                                                                        $("#slot" + pNumber + " .betButtons").addClass("noclick-nohide animate__zoomOut animate__animated");
-                                                                        chipPlace.play();
-                                                                        socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }));
-                                                                    }}
-                                                                >
-                                                                    {doCurrencyMil(bet * 1000)}
-                                                                </button>
-                                                            </span>
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                                <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000}>
-                                                                    {doCurrencyMil(bet * 1000)}
-                                                                </button>
-                                                            </span>
-                                                        );
-                                                    }
-                                                })}
+                            return (
+                                <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 && last === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
+                                    {!player?.nickname ? (
+                                        <>
+                                            <div
+                                                className={gameData.gameOn || gameData.min * 1000 > userData.balance || _countBet >= 3 || (gameTimer < 2 && gameData.gameStart) ? "empty-slot noclick" : "empty-slot"}
+                                                onClick={() => {
+                                                    clickFiller.play();
+                                                    socket.send(JSON.stringify({ method: "join", theClient: userData, gameId: gameData.id, seat: pNumber }));
+                                                }}
+                                            >
+                                                <i className="fas fa-user-plus"></i>
                                             </div>
-                                        )}
-                                        {player.bet > 0 && (
-                                            <>
-                                                <div id="bets-container-left">
-                                                    {_renge
-                                                        .filter((bet, i) => i < 2)
-                                                        .map((bet, i) => (
-                                                            <span key={i} style={gameData.gameOn ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                                <button
-                                                                    className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
-                                                                    id={"chip" + i}
-                                                                    value={bet * 1000}
-                                                                    onClick={() => {
-                                                                        $("#slot" + pNumber + "  #bets-container-left .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
-                                                                        chipPlace.play();
-                                                                        socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }));
-                                                                    }}
-                                                                >
-                                                                    {doCurrencyMil(bet * 1000)}
-                                                                </button>
-                                                            </span>
-                                                        ))}
-
-                                                    <span className={player?.sideppx > 0 ? "winner" : ""}>
-                                                        {player?.sideppx > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.sideppx}</div>}
-                                                        {sidePP ? (
-                                                            <>
-                                                                <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePP / 1000)}>
-                                                                    {doCurrencyMil(sidePP)}
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                {sidePPPlayer ? (
-                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
-                                                                        {doCurrencyMil(sidePPPlayer)}
-                                                                    </button>
-                                                                ) : (
-                                                                    <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
-                                                                        Perfect
-                                                                        <br />
-                                                                        Pairs
-                                                                    </button>
-                                                                )}
-                                                            </>
-                                                        )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {!gameData.gameOn && !player.bet && player.nickname === userData.nickname && (
+                                                <div id="bets-container">
+                                                    <span className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
+                                                        <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip"} onClick={() => socket.send(JSON.stringify({ method: "leave", gameId: gameData.id, seat: pNumber }))}>
+                                                            X
+                                                        </button>
                                                     </span>
-                                                </div>
-                                                <div id="bets-container-right">
-                                                    {_renge
-                                                        .filter((bet, i) => i < 2)
-                                                        .map((bet, i) => (
-                                                            <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                                <button
-                                                                    className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
-                                                                    id={"chip" + i}
-                                                                    value={bet * 1000}
-                                                                    onClick={() => {
-                                                                        $("#slot" + pNumber + " #bets-container-right .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
-                                                                        chipPlace.play();
-                                                                        socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }));
-                                                                    }}
-                                                                >
-                                                                    {doCurrencyMil(bet * 1000)}
-                                                                </button>
-                                                            </span>
-                                                        ))}
-                                                    <span className={player?.side213x > 0 ? "winner" : ""}>
-                                                        {player?.side213x > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.side213x}</div>}
-                                                        {side213 ? (
-                                                            <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213 / 1000)}>
-                                                                {doCurrencyMil(side213)}
-                                                            </button>
-                                                        ) : (
-                                                            <>
-                                                                {side213layer ? (
-                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
-                                                                        {doCurrencyMil(side213layer)}
+                                                    {_renge.map(function (bet, i) {
+                                                        if (bet * 1000 <= userData.balance) {
+                                                            return (
+                                                                <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
+                                                                    <button
+                                                                        className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"
+                                                                        id={"chip" + i}
+                                                                        value={bet * 1000}
+                                                                        onClick={() => {
+                                                                            $("#slot" + pNumber + " .betButtons").addClass("noclick-nohide animate__zoomOut animate__animated");
+                                                                            chipPlace.play();
+                                                                            socket.send(JSON.stringify({ method: "bet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber }));
+                                                                        }}
+                                                                    >
+                                                                        {doCurrencyMil(bet * 1000)}
                                                                     </button>
-                                                                ) : (
-                                                                    <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
-                                                                        21
-                                                                        <br />+ 3
+                                                                </span>
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
+                                                                    <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000}>
+                                                                        {doCurrencyMil(bet * 1000)}
                                                                     </button>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </span>
+                                                                </span>
+                                                            );
+                                                        }
+                                                    })}
                                                 </div>
-                                            </>
-                                        )}
-                                        {gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.currentPlayer === pNumber && player.nickname === userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
-                                            <div id="decision" className="user-action-container  animate__slideInUp animate__animated">
-                                                <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
+                                            )}
+                                            {player.bet > 0 && (
+                                                <>
+                                                    <div id="bets-container-left">
+                                                        {_renge
+                                                            .filter((bet, i) => i < 2)
+                                                            .map((bet, i) => (
+                                                                <span key={i} style={gameData.gameOn ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
+                                                                    <button
+                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        id={"chip" + i}
+                                                                        value={bet * 1000}
+                                                                        onClick={() => {
+                                                                            $("#slot" + pNumber + "  #bets-container-left .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
+                                                                            chipPlace.play();
+                                                                            socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }));
+                                                                        }}
+                                                                    >
+                                                                        {doCurrencyMil(bet * 1000)}
+                                                                    </button>
+                                                                </span>
+                                                            ))}
 
-                                                <div className="user-action-box">
-                                                    <button
-                                                        className="user-action"
-                                                        id="stand"
-                                                        onClick={() => {
-                                                            $('#decision').hide();
-                                                            $(".user-action").addClass("noclick-nohide");
-                                                            actionClick.play();
-                                                            socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }));
-                                                        }}
-                                                    >
-                                                        <i className="fas fa-hand-paper"></i>
-                                                    </button>
-                                                    <div className="user-action-text">STAND</div>
-                                                </div>
-                                                <div className="user-action-box">
-                                                    <button
-                                                        className="user-action"
-                                                        id="hit"
-                                                        onClick={() => {
-                                                            $('#decision').hide();
-                                                            actionClick.play();
-                                                            socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }));
-                                                        }}
-                                                    >
-                                                        <i className="fas fa-hand-pointer"></i>
-                                                    </button>
-                                                    <div className="user-action-text">HIT</div>
-                                                </div>
-                                                {player.cards.length === 2 && userData.balance >= player.bet && (
-                                                    <div className="user-action-box  hide-element">
+                                                        <span className={player?.sideppx > 0 ? "winner" : ""}>
+                                                            {player?.sideppx > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.sideppx}</div>}
+                                                            {sidePP ? (
+                                                                <>
+                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePP / 1000)}>
+                                                                        {doCurrencyMil(sidePP)}
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {sidePPPlayer ? (
+                                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
+                                                                            {doCurrencyMil(sidePPPlayer)}
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                            Perfect
+                                                                            <br />
+                                                                            Pairs
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div id="bets-container-right">
+                                                        {_renge
+                                                            .filter((bet, i) => i < 2)
+                                                            .map((bet, i) => (
+                                                                <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
+                                                                    <button
+                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        id={"chip" + i}
+                                                                        value={bet * 1000}
+                                                                        onClick={() => {
+                                                                            $("#slot" + pNumber + " #bets-container-right .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
+                                                                            chipPlace.play();
+                                                                            socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }));
+                                                                        }}
+                                                                    >
+                                                                        {doCurrencyMil(bet * 1000)}
+                                                                    </button>
+                                                                </span>
+                                                            ))}
+                                                        <span className={player?.side213x > 0 ? "winner" : ""}>
+                                                            {player?.side213x > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.side213x}</div>}
+                                                            {side213 ? (
+                                                                <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213 / 1000)}>
+                                                                    {doCurrencyMil(side213)}
+                                                                </button>
+                                                            ) : (
+                                                                <>
+                                                                    {side213layer ? (
+                                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
+                                                                            {doCurrencyMil(side213layer)}
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                            21
+                                                                            <br />+ 3
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.currentPlayer === pNumber && player.nickname === userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
+                                                <div id="decision" className="user-action-container  animate__slideInUp animate__animated">
+                                                    <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
+
+                                                    <div className="user-action-box">
                                                         <button
                                                             className="user-action"
-                                                            id="doubleDown"
+                                                            id="stand"
                                                             onClick={() => {
-                                                                $('#decision').hide();
+                                                                $("#decision").hide();
                                                                 $(".user-action").addClass("noclick-nohide");
                                                                 actionClick.play();
-                                                                socket.send(JSON.stringify({ method: "double", gameId: gameData.id, seat: pNumber }));
+                                                                socket.send(JSON.stringify({ method: "stand", gameId: gameData.id, seat: pNumber }));
                                                             }}
                                                         >
-                                                            <i className="fas fa-hand-peace"></i>
-                                                            <span>2X</span>
+                                                            <i className="fas fa-hand-paper"></i>
                                                         </button>
-                                                        <div className="user-action-text">DOUBLE</div>
+                                                        <div className="user-action-text">STAND</div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 ? "player-name highlight" : "player-name"}>
-                                                {player.nickname}
-                                                <span className="hide-element">
-                                                    <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
-                                                </span>
-                                            </div>
-                                        )}
+                                                    <div className="user-action-box">
+                                                        <button
+                                                            className="user-action"
+                                                            id="hit"
+                                                            onClick={() => {
+                                                                $("#decision").hide();
+                                                                actionClick.play();
+                                                                socket.send(JSON.stringify({ method: "hit", gameId: gameData.id, seat: pNumber }));
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-hand-pointer"></i>
+                                                        </button>
+                                                        <div className="user-action-text">HIT</div>
+                                                    </div>
+                                                    {player.cards.length === 2 && userData.balance >= player.bet && (
+                                                        <div className="user-action-box  hide-element">
+                                                            <button
+                                                                className="user-action"
+                                                                id="doubleDown"
+                                                                onClick={() => {
+                                                                    $("#decision").hide();
+                                                                    $(".user-action").addClass("noclick-nohide");
+                                                                    actionClick.play();
+                                                                    socket.send(JSON.stringify({ method: "double", gameId: gameData.id, seat: pNumber }));
+                                                                }}
+                                                            >
+                                                                <i className="fas fa-hand-peace"></i>
+                                                                <span>2X</span>
+                                                            </button>
+                                                            <div className="user-action-text">DOUBLE</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 ? "player-name highlight" : "player-name"}>
+                                                    {player.nickname}
+                                                    <span className="hide-element">
+                                                        <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                                    </span>
+                                                </div>
+                                            )}
 
-                                        {player.sum > 0 && <div className={gameData.currentPlayer === pNumber ? "current-player-highlight player-sum" : "player-sum " + _resClass}>{player.sum}</div>}
-                                        {player.bet > 0 ? (
-                                            <div className={"player-coin"}>
-                                                {player.isDouble ? (
-                                                    <>
-                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 2000)}>
+                                            {player.sum > 0 && <div className={gameData.currentPlayer === pNumber ? "current-player-highlight player-sum counter" : "player-sum counter " + _resClass}  data-count={player.sum}></div>}
+                                            {player.bet > 0 ? (
+                                                <div className={"player-coin"}>
+                                                    {player.isDouble ? (
+                                                        <>
+                                                            <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 2000)}>
+                                                                {doCurrencyMil(player.bet)}
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 1000)}>
                                                             {doCurrencyMil(player.bet)}
                                                         </button>
-                                                    </>
-                                                ) : (
-                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 1000)}>
-                                                        {doCurrencyMil(player.bet)}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="player-coin animate__flipInX animate__animated">
-                                                <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
-                                            </div>
-                                        )}
-                                        {_res && <div className={"player-result animate__animated animate__bounceIn " + _resClass}>{_res}</div>}
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="player-coin animate__flipInX animate__animated">
+                                                    <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                                </div>
+                                            )}
+                                            {_res && <div className={"player-result animate__animated animate__bounceIn " + _resClass}>{_res}</div>}
 
-                                        <div className={"player-cards"}>
-                                            {player.cards.map(function (card, i) {
-                                                return (
-                                                    <span key={i} className={player.isDouble && i === 2 ? "animate__animated animate__slideInDown cardImg isdouble" : " animate__animated animate__slideInDown cardImg"}>
-                                                        <img className={player.isDouble && i === 2 ? "     animate__animated  animate__flipInX  cardImg card" + (i + 1) : " animate__animated  animate__flipInY  cardImg card" + (i + 1)} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    </>
-                                )}
-                                <div id="players-timer-container">
-                                    <svg className="players-timer">
-                                        <circle className={gameData.currentPlayer === pNumber && player?.nickname && gameData.gameOn && player?.sum < 21 && player?.bet > 0 && player.cards.length >= 2 && gameData.dealer.hiddencards.length > 0 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent" />
-                                    </svg>
-                                </div>
-                            </span>
-                        );
-                    })}
+                                            <div className={"player-cards"}>
+                                                {player.cards.map(function (card, i) {
+                                                    return (
+                                                        <span key={i} className={player.isDouble && i === 2 ? "animate__animated animate__slideInDown cardImg isdouble" : " animate__animated animate__slideInDown cardImg"}>
+                                                            <img className={player.isDouble && i === 2 ? "     animate__animated  animate__flipInX  cardImg card" + (i + 1) : " animate__animated  animate__flipInY  cardImg card" + (i + 1)} alt={card.suit + card.value.card} val={card.value.value} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        </>
+                                    )}
+                                    <div id="players-timer-container">
+                                        <svg className="players-timer">
+                                            <circle className={gameData.currentPlayer === pNumber && player?.nickname && gameData.gameOn && player?.sum < 21 && player?.bet > 0 && player.cards.length >= 2 && gameData.dealer.hiddencards.length > 0 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent" />
+                                        </svg>
+                                    </div>
+                                </span>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div><span id="nicknameId" style={{display:"none"}}>{userData.nickname}</span>
-            </div></>
+                <span id="nicknameId" style={{ display: "none" }}>
+                    {userData.nickname}
+                </span>
+            </div>
+        </>
     );
 };
 

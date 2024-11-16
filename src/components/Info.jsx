@@ -76,11 +76,11 @@ const ModalExampleScrollingContent = (prop) => {
             <div id="balance-bet-box" style={{top:80, right: -33}}>
             <div className="balance-bet">
                         Total Bet
-                       <div id="total-bet">{doCurrency(prop.totalBetAll)}</div>
+                       <div id="total-bet" className="counter" data-count={prop.totalBetAll}></div>
                     </div>
                     <div className="balance-bet">
                         Total Win
-                        <div id="total-bet">{doCurrency(prop.totalWinAll)}</div>
+                        <div id="total-bet" className="counter" data-count={prop.totalWinAll}></div>
                    
                     </div></div>
         </span>
