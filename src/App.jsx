@@ -113,7 +113,7 @@ window.addEventListener(
 window.parent.postMessage("userget", "*");
 
 if (window.self === window.top) {
-    window.location.href = "https://www.google.com/";
+    //window.location.href = "https://www.google.com/";
 }
 let dealingSound = new Howl({
     src: ["/sounds/dealing_card_fix3.mp3"],
