@@ -1085,6 +1085,19 @@ span.cardImg {
 
   
 }
+.player-coin.all {
+  display: inline;
+    transform: scale(.6) translateX(-30px);
+    left: 40px;
+    top: 190px;
+    pointer-events: all;
+    z-index: 190;
+}
+
+.player-coin .player-avatar  {
+  z-index: -1;
+  opacity: .5;
+}
 .card4 {
   z-index: 4;
   margin-left: 60px;
@@ -1321,7 +1334,7 @@ right: 90px;
   border: #fff solid 2px;
   font-size: 15px;
   font-family: "Open Sans", sans-serif;
-
+opacity: .5;
 }
 .tabl2 .betButtons{
   filter: hue-rotate(45deg);
