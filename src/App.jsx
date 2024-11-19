@@ -643,9 +643,11 @@ const BlackjackGame = () => {
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
+                                                                            if(!gameData.gameOn){
                                                                             $("#slot" + pNumber + "  #bets-container-left .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
                                                                             chipPlace.play();
                                                                             socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }));
+                                                                            }
                                                                         }}
                                                                     >
                                                                         {doCurrencyMil(bet * 1000)}
@@ -688,9 +690,11 @@ const BlackjackGame = () => {
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
+                                                                            if(!gameData.gameOn){
                                                                             $("#slot" + pNumber + " #bets-container-right .betButtons:not(.place)").addClass("noclick-nohide animate__zoomOut animate__animated");
                                                                             chipPlace.play();
                                                                             socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }));
+                                                                            }
                                                                         }}
                                                                     >
                                                                         {doCurrencyMil(bet * 1000)}
