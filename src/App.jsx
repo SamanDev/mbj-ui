@@ -597,7 +597,7 @@ const BlackjackGame = () => {
                                             {!gameData.gameOn && !player.bet && player.nickname === userData.nickname && (
                                                 <div id="bets-container">
                                                     <span className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                        <button className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp" id={"chip"} onClick={() => socket.send(JSON.stringify({ method: "leave", gameId: gameData.id, seat: pNumber }))}>
+                                                        <button className="betButtons  animate__faster animate__animated animate__zoomInUp" id={"chip"} onClick={() => socket.send(JSON.stringify({ method: "leave", gameId: gameData.id, seat: pNumber }))}>
                                                             X
                                                         </button>
                                                     </span>
@@ -606,7 +606,7 @@ const BlackjackGame = () => {
                                                             return (
                                                                 <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
                                                                     <button
-                                                                        className="betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"
+                                                                        className="betButtons  animate__faster animate__animated animate__zoomInUp"
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
@@ -622,7 +622,7 @@ const BlackjackGame = () => {
                                                         } else {
                                                             return (
                                                                 <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
-                                                                    <button className="betButtons update-balance-bet noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000}>
+                                                                    <button className="betButtons  noclick noclick-nohide animate__faster animate__animated animate__zoomInUp" id={"chip" + i} value={bet * 1000}>
                                                                         {doCurrencyMil(bet * 1000)}
                                                                     </button>
                                                                 </span>
@@ -639,7 +639,7 @@ const BlackjackGame = () => {
                                                             .map((bet, i) => (
                                                                 <span key={i} style={gameData.gameOn ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
                                                                     <button
-                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        className={gameData.gameOn ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons  animate__faster animate__animated animate__zoomInUp noclick" : "betButtons  animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
@@ -657,18 +657,18 @@ const BlackjackGame = () => {
                                                             {player?.sideppx > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.sideppx}</div>}
                                                             {sidePP ? (
                                                                 <>
-                                                                    <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePP / 1000)}>
+                                                                    <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePP / 1000)}>
                                                                         {doCurrencyMil(sidePP)}
                                                                     </button>
                                                                 </>
                                                             ) : (
                                                                 <>
                                                                     {sidePPPlayer ? (
-                                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
+                                                                        <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
                                                                             {doCurrencyMil(sidePPPlayer)}
                                                                         </button>
                                                                     ) : (
-                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner  animate__faster animate__animated animate__zoomInUp " : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
                                                                             Perfect
                                                                             <br />
                                                                             Pairs
@@ -684,7 +684,7 @@ const BlackjackGame = () => {
                                                             .map((bet, i) => (
                                                                 <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated" : ""}>
                                                                     <button
-                                                                        className={gameData.gameOn ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons update-balance-bet noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp noclick" : "betButtons update-balance-bet animate__faster animate__animated animate__zoomInUp"}
+                                                                        className={gameData.gameOn ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons  animate__faster animate__animated animate__zoomInUp noclick" : "betButtons  animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
@@ -700,17 +700,17 @@ const BlackjackGame = () => {
                                                         <span className={player?.side213x > 0 ? "winner" : ""}>
                                                             {player?.side213x > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.side213x}</div>}
                                                             {side213 ? (
-                                                                <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213 / 1000)}>
+                                                                <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213 / 1000)}>
                                                                     {doCurrencyMil(side213)}
                                                                 </button>
                                                             ) : (
                                                                 <>
                                                                     {side213layer ? (
-                                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
+                                                                        <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
                                                                             {doCurrencyMil(side213layer)}
                                                                         </button>
                                                                     ) : (
-                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place update-balance-bet animate__faster animate__animated animate__zoomInUp noclick"}>
+                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
                                                                             21
                                                                             <br />+ 3
                                                                         </button>
@@ -787,12 +787,12 @@ const BlackjackGame = () => {
                                                 <div className={"player-coin"}>
                                                     {player.isDouble ? (
                                                         <>
-                                                            <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 2000)}>
+                                                            <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 2000)}>
                                                                 {doCurrencyMil(player.bet)}
                                                             </button>
                                                         </>
                                                     ) : (
-                                                        <button className="betButtons update-balance-bet noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 1000)}>
+                                                        <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === player.bet / 1000)}>
                                                             {doCurrencyMil(player.bet)}
                                                         </button>
                                                     )}
