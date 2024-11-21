@@ -340,8 +340,6 @@ const BlackjackGame = () => {
     useEffect(() => {
         if (gamesData.length && gameId !== 0) {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
-            //console.log(_data);
-            //_data = {"id":"BJ01","players":[{"nickname":"kandal","avatar":"lvl25","cards":[{"suit":"Club","value":{"card":"7","value":7}},{"suit":"Diamond","value":{"card":"7","value":7}}],"bet":60000,"sum":14,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":120000,"sideppx":5,"side213x":0},{"nickname":"Zidan","avatar":"lvl22","cards":[{"suit":"Spade","value":{"card":"9","value":9}},{"suit":"Club","value":{"card":"10","value":10}}],"bet":60000,"sum":19,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":120000,"sideppx":0,"side213x":0},{"nickname":"kandal","avatar":"lvl25","cards":[{"suit":"Club","value":{"card":"J","value":10}},{"suit":"Heart","value":{"card":"7","value":7}}],"bet":30000,"sum":17,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":60000,"sideppx":0,"side213x":0},{"nickname":"jibax","avatar":"lvl26","cards":[{"suit":"Diamond","value":{"card":"8","value":8}},{"suit":"Heart","value":{"card":"J","value":10}}],"bet":60000,"sum":18,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":120000,"sideppx":0,"side213x":0},{"nickname":"AsPass","avatar":"lvl32","cards":[{"suit":"Diamond","value":{"card":"J","value":10}},{"suit":"Club","value":{"card":"A","value":[1,11],"hasAce":true}}],"bet":30000,"sum":21,"hasAce":false,"isReady":false,"blackjack":true,"isDouble":false,"hasLeft":false,"win":75000,"sideppx":0,"side213x":0},{"nickname":"Alifarazin","avatar":"lvl21","cards":[{"suit":"Spade","value":{"card":"5","value":5}},{"suit":"Spade","value":{"card":"2","value":2}},{"suit":"Club","value":{"card":"Q","value":10}}],"bet":60000,"sum":17,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":120000,"sideppx":0,"side213x":5},{"nickname":"AsPass","avatar":"lvl32","cards":[{"suit":"Club","value":{"card":"7","value":7}},{"suit":"Club","value":{"card":"5","value":5}},{"suit":"Diamond","value":{"card":"10","value":10}}],"bet":60000,"sum":22,"hasAce":false,"isReady":false,"blackjack":false,"isDouble":false,"hasLeft":false,"win":0,"sideppx":0,"side213x":0}],"sideBets":[{"seat":0,"amount":30000,"mode":"PerfectPer","nickname":"Loole","win":150000,"x":"x5"},{"seat":0,"amount":30000,"mode":"PerfectPer","nickname":"kandal","win":150000,"x":"x5"},{"seat":3,"amount":30000,"mode":"21+3","nickname":"jibax","win":0,"x":null},{"seat":3,"amount":30000,"mode":"PerfectPer","nickname":"Loole","win":0,"x":null},{"seat":4,"amount":30000,"mode":"PerfectPer","nickname":"Loole","win":0,"x":null},{"seat":1,"amount":30000,"mode":"PerfectPer","nickname":"Zidan","win":0,"x":null},{"seat":2,"amount":30000,"mode":"PerfectPer","nickname":"kandal","win":0,"x":null},{"seat":6,"amount":30000,"mode":"21+3","nickname":"Loole","win":0,"x":null}],"dealer":{"cards":[{"suit":"Spade","value":{"card":"4","value":4}},{"suit":"Heart","value":{"card":"4","value":4}},{"suit":"Heart","value":{"card":"3","value":3}},{"suit":"Heart","value":{"card":"A","value":[1,11],"hasAce":true}},{"suit":"Heart","value":{"card":"J","value":10}}],"hiddencards":[{"suit":"Back","value":{"card":"0","value":0}}],"sum":22,"hasAce":false,"hasLeft":true},"gameOn":true,"gameStart":true,"currentPlayer":10,"min":30,"seats":7,"startTimer":-1,"timer":20,"idcode":"d84320d3-4a09-8e80-c16b-f2413154c555"}
             setGameDataLive(_data);
             
             $("#decision").show();
@@ -740,7 +738,7 @@ const BlackjackGame = () => {
                                                                         </button>
                                                                     )}
                                                              {allBet21.length > 0 && (
-                                    <div className={"player-coin all"}>
+                                    <div className={"player-coin all right"}>
                                         {allBet21.map(function (player, pNumber) {
                                             return (
                                                 <Popup
@@ -748,7 +746,7 @@ const BlackjackGame = () => {
                                                     size="mini"
                                                     inverted
                                                     trigger={
-                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
+                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * -5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
                                                             {doCurrencyMil(player.amount)}
                                                         </button>
                                                     }
@@ -825,7 +823,7 @@ const BlackjackGame = () => {
                                                 <div className={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 ? "player-name highlight" : "player-name"}>
                                                     {player.nickname}
                                                     <span className="hide-element">
-                                                        <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                                        <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".webp"} alt="avatar" />
                                                     </span>
                                                 </div>
                                             )}
@@ -847,7 +845,7 @@ const BlackjackGame = () => {
                                                 </div>
                                             ) : (
                                                 <div className="player-coin animate__flipInX animate__animated">
-                                                    <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".png"} alt="avatar" />
+                                                    <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".webp"} alt="avatar" />
                                                 </div>
                                             )}
                                             {_res && <div className={"player-result animate__animated animate__bounceIn " + _resClass}>{_res}</div>}
@@ -856,7 +854,7 @@ const BlackjackGame = () => {
                                                 {player.cards.map(function (card, i) {
                                                     return (
                                                         <span key={i} className={player.isDouble && i === 2 ? "animate__animated animate__slideInDown cardImg isdouble" : " animate__animated animate__slideInDown cardImg"}>
-                                                            <img className={player.isDouble && i === 2 ? "     animate__animated  animate__flipInX  cardImg card" + (i + 1) : " animate__animated  animate__flipInY  cardImg card" + (i + 1)} alt={card.suit + card.value.card} val={card.value.value} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
+                                                            <img className={player.isDouble && i === 2 ? "animate__animated  animate__flipInX  cardImg card" + (i + 1) : " animate__animated  animate__flipInY  cardImg card" + (i + 1)} alt={card.suit + card.value.card} src={"/imgs/" + card.suit + card.value.card + ".svg"} />
                                                         </span>
                                                     );
                                                 })}
