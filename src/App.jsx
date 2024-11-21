@@ -264,7 +264,7 @@ const BlackjackGame = () => {
                 if (data.last) {
                     setTimeout(() => {
                         var _data = data.games.filter((game) => game?.id === data.gameId)[0];
-                        localStorage.setItem(data.gameId, JSON.stringify(_data));
+                       // localStorage.setItem(data.gameId, JSON.stringify(_data));
                     }, 3000);
                 }
                 if (data.cur) {
@@ -483,7 +483,7 @@ const BlackjackGame = () => {
                                     setLast(true);
                                 }}
                                 onMouseLeave={() => {
-                                    setLast(false);
+                                    //setLast(false);
                                 }}
                             >
                                 Show Last Hand
@@ -687,7 +687,7 @@ const BlackjackGame = () => {
                                                     size="mini"
                                                     inverted
                                                     trigger={
-                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: pNumber * 15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
+                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: (pNumber * -15) }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
                                                             {doCurrencyMil(player.amount)}
                                                         </button>
                                                     }
@@ -748,7 +748,7 @@ const BlackjackGame = () => {
                                                     size="mini"
                                                     inverted
                                                     trigger={
-                                                        <button className="betButtons noclick-nohide animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: pNumber * 45 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
+                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
                                                             {doCurrencyMil(player.amount)}
                                                         </button>
                                                     }
