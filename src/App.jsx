@@ -264,7 +264,7 @@ const BlackjackGame = () => {
                 if (data.last) {
                     setTimeout(() => {
                         var _data = data.games.filter((game) => game?.id === data.gameId)[0];
-                       // localStorage.setItem(data.gameId, JSON.stringify(_data));
+                        localStorage.setItem(data.gameId, JSON.stringify(_data));
                     }, 3000);
                 }
                 if (data.cur) {
@@ -483,7 +483,7 @@ const BlackjackGame = () => {
                                     setLast(true);
                                 }}
                                 onMouseLeave={() => {
-                                    //setLast(false);
+                                    setLast(false);
                                 }}
                             >
                                 Show Last Hand
