@@ -385,10 +385,10 @@ const BlackjackGame = () => {
                     // play nothing when mouse leaves chip
                 }
             );
-        }, 10);
+        }, 100);
         setTimeout(() => {
             animateNum()
-        }, 10);
+        }, 100);
     }, [gamesData, gameId, last]);
     useEffect(() => {
         if (last) {
