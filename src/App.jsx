@@ -57,12 +57,18 @@ const getAllBets = (sideBets,username,seat, mode) => {
 };
 const AppOrtion = () => {
     var gWidth = $("#root").width() / 1400;
-
-    var scale = gWidth;
+    var gHight = $("#root").height() / 850;
+    var scale = gWidth<gHight?gWidth:gHight;
     var highProtect = $("#root").height() * scale;
-    var gHight;
+    console.log($("#root").width(),$("#root").height());
+    console.log(gWidth,gHight,scale);
+   
+    
+
+    
     if (highProtect > 850) {
-        gHight = $("#root").height() / 850;
+        console.log(gWidth,gHight,highProtect);
+        //gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
         scale = gHight;
         if (scale <= 1) {
@@ -76,12 +82,13 @@ const AppOrtion = () => {
             }, 10);
         }
     } else {
-        gHight = $("#root").height() / 850;
+       // gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
-        scale = gHight;
+      //  scale = gHight;
         if (scale <= 1) {
+            var _t = ($("#root").height() - highProtect)/4;
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ")");
+                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
             }, 10);
         } else {
             scale = 1;
@@ -644,7 +651,7 @@ const BlackjackGame = () => {
                                                         {_renge
                                                             .filter((bet, i) => i < 2)
                                                             .map((bet, i) => (
-                                                                <span key={i} style={gameData.gameOn ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated sides" : "sides"}>
+                                                                <span key={i} style={gameData.gameOn || sidePP ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated sides" : "sides"}>
                                                                     <button
                                                                         className={gameData.gameOn ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : sidePP ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons  animate__faster animate__animated animate__zoomInUp noclick" : "betButtons  animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}
@@ -708,7 +715,7 @@ const BlackjackGame = () => {
                                                         {_renge
                                                             .filter((bet, i) => i < 2)
                                                             .map((bet, i) => (
-                                                                <span key={i} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated sides" : "sides"}>
+                                                                <span key={i} style={gameData.gameOn || side213 ? { opacity: 0 } : { opacity: 1 }} className={gameTimer < 2 && gameTimer >= -1 && gameData.gameStart ? "animate__zoomOut animate__animated sides" : "sides"}>
                                                                     <button
                                                                         className={gameData.gameOn ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : side213 ? "betButtons  noclick animate__faster animate__animated animate__fadeOutDown" : bet * 1000 > userData.balance || bet * 1000 > player.bet ? "betButtons  animate__faster animate__animated animate__zoomInUp noclick" : "betButtons  animate__faster animate__animated animate__zoomInUp"}
                                                                         id={"chip" + i}

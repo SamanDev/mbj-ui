@@ -9,7 +9,7 @@ html {
   overflow: hidden;
   font-family: "Open Sans", sans-serif;
   width: 100vw;
-  height: 100%;
+  height: 100vh !important;
   padding: 0;
   margin: 0;
 }
@@ -1730,6 +1730,8 @@ background: linear-gradient(to right, #0ABFBC, #FC354C);
   background-color: #ffffff;
   font-family: sans-serif;
   text-align: center;
+  max-width: 300px;
+  max-height: 500px
 }
 
 .animation {
