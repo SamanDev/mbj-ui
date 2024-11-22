@@ -1056,11 +1056,15 @@ i {
   height: 135px;
   transform-origin: top left;
   -webkit-transform-origin: top left;
+  -moz-transform-origin: top left;
+  -ms-transform-origin: top left;
 }
 span.cardImg {
   
   transform-origin: left center;
   -webkit-transform-origin:  left center;
+  -moz-transform-origin:  left center;
+  -ms-transform-origin:  left center;
 }
 .card1 {
   z-index: 1;
@@ -1085,6 +1089,8 @@ span.cardImg {
   -webkit-transform-origin: bottom !important;
   -ms-transform: rotate(-90deg) !important;
   -ms-transform-origin: bottom !important;
+  -moz-transform: rotate(-90deg) !important;
+  -moz-transform-origin: bottom !important;
   margin-left: 70px;
 
   
@@ -1099,7 +1105,7 @@ span.cardImg {
 }
 .player-coin.all.right {
   display: inline;
-    transform: scale(.6) translateX(20px);
+    transform: scale(.6) translateX(10px);
     left: 40px;
     top: 190px;
     pointer-events: all;
