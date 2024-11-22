@@ -60,40 +60,45 @@ const AppOrtion = () => {
     var gHight = $("#root").height() / 850;
     var scale = gWidth<gHight?gWidth:gHight;
     var highProtect = $("#root").height() * scale;
-    console.log($("#root").width(),$("#root").height());
-    console.log(gWidth,gHight,scale);
+    //console.log($("#root").width(),$("#root").height());
+   // console.log(gWidth,gHight,scale);
    
     
 
-    
     if (highProtect > 850) {
         console.log(gWidth,gHight,highProtect);
         //gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
         scale = gHight;
-        if (scale <= 1) {
+        highProtect = $("#root").height() * scale;
+        var _t = ($("#root").height() - highProtect)/4;
+        if(_t<0){_t=_t*-1}
+        
+        if (scale < 1) {
             setTimeout(() => {
                 $("#scale").css("transform", "scale(" + scale + ")");
             }, 10);
         } else {
             scale = 1;
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ")");
+                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
             }, 10);
         }
     } else {
        // gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
       //  scale = gHight;
-        if (scale <= 1) {
-            var _t = ($("#root").height() - highProtect)/4;
+      var _t = ($("#root").height() - highProtect)/4;
+   if(_t<0){_t=_t*-1}
+        if (scale < 1) {
+            
             setTimeout(() => {
                 $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
             }, 10);
         } else {
             scale = 1;
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ")");
+                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
             }, 10);
         }
     }
