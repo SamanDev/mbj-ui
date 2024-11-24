@@ -30,7 +30,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
-    <link rel="stylesheet" href="/css/dist/style.css?v=25">
+    <link rel="stylesheet" href="/css/dist/style.css?v=26">
 
     <title>BlackJack MultiPlayer</title>
   </head>
@@ -58,13 +58,28 @@
     <div id="root"></div>
     <div class="hidden">
       <script>
-			var images = new Array()
+        var images = new Array()
+        var _lvl=[];
+      _lvl.push("/imgs/chips/Casino_Chip_Red.svg")
+      _lvl.push("/imgs/chips/Casino_Chip_Orange.svg")
+      _lvl.push("/imgs/chips/Casino_Chip_Purple.svg")
+     
+      for (let index = 1; index < 91; index++) {
+          _lvl.push("/imgs/avatars/lvl" + index + ".webp")
+        
+          }
+          for (i = 0; i < _lvl.length; i++) {
+					images[i] = new Image()
+					images[i].src = _lvl[i]
+				}
+			
 			function preload() {
 				for (i = 0; i < preload.arguments.length; i++) {
-					images[i] = new Image()
-					images[i].src = preload.arguments[i]
+					images[i+1+_lvl.length] = new Image()
+					images[i+1+_lvl.length].src = preload.arguments[i]
 				}
 			}
+     
 			preload(
         "/imgs/Heart2.svg",
         "/imgs/Heart3.svg",
@@ -117,8 +132,10 @@
         "/imgs/ClubJ.svg",
         "/imgs/ClubQ.svg",
         "/imgs/ClubK.svg",
-        "/imgs/ClubA.svg"
-			)
+        "/imgs/ClubA.svg",
+
+        "/imgs/Back0.svg"
+      )
 	</script>
     </div>
    
