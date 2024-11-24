@@ -519,7 +519,7 @@ const BlackjackGame = () => {
                             </div>
                         )}
                         {gameData.dealer?.cards.length > 0 && (
-                            <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -40 }}>
+                            <div className="dealer-cards" style={{ marginLeft: gameData.dealer?.cards.length * -45 }}>
                                 <div className="visibleCards">
                                     {gameData.dealer?.cards.map(function (card, i) {
                                         var _dClass = "animate__flipInY";

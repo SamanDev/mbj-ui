@@ -1266,7 +1266,6 @@ right: 90px;
   left: 50%;
   width: 100%;
   transition: 500ms;
-  transform: translateX(-6px);
 }
 #dealer .visibleCards {
   margin: 0 auto;
