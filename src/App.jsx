@@ -757,6 +757,7 @@ const BlackjackGame = () => {
                                                     key={pNumber}
                                                     size="mini"
                                                     inverted
+                                                     on='hover'
                                                     trigger={
                                                         <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * -5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
                                                             {doCurrencyMil(player.amount)}
