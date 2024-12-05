@@ -66,7 +66,7 @@ const AppOrtion = () => {
     
 
     if (highProtect > 850) {
-        console.log(gWidth,gHight,highProtect);
+        //console.log(gWidth,gHight,highProtect);
         //gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
         scale = gHight;
