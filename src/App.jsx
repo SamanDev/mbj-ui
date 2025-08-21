@@ -15,7 +15,7 @@ if (pathArr.length === 3) {
 //_auth = "farshad-HangOver2";
 //console.log(_auth);
 
-const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://${loc.hostname}:8080`;
+const WEB_URL = process.env.REACT_APP_MODE === "production" ? `wss://${process.env.REACT_APP_DOMAIN_NAME}/` : `ws://${loc.hostname}:8087`;
 
 // (A) LOCK SCREEN ORIENTATION
 
@@ -50,20 +50,20 @@ const haveSideBet = (sideBets, nickname, seat, mode) => {
 
     return _have;
 };
-const getAllBets = (sideBets,username,seat, mode) => {
-    var userbet = sideBets.filter((sideBet) => sideBet.seat == seat  && sideBet?.mode === mode && sideBet.nickname != username);
+const getAllBets = (sideBets, username, seat, mode) => {
+    var userbet = sideBets.filter((sideBet) => sideBet.seat == seat && sideBet?.mode === mode && sideBet.nickname != username);
 
     return userbet;
 };
 const AppOrtion = () => {
     var gWidth = $("#root").width() / 1400;
     var gHight = $("#root").height() / 850;
-    var scale = gWidth<gHight?gWidth:gHight;
+    var scale = gWidth < gHight ? gWidth : gHight;
     var highProtect = $("#root").height() * scale;
     //console.log($("#root").width(),$("#root").height());
-   // console.log(gWidth,gHight,scale);
-   
-    
+    // console.log(gWidth,gHight,scale);
+
+
 
     if (highProtect > 850) {
         //console.log(gWidth,gHight,highProtect);
@@ -71,9 +71,9 @@ const AppOrtion = () => {
         // scale = (scale + gHight)/2;
         scale = gHight;
         highProtect = $("#root").height() * scale;
-        var _t = ($("#root").height() - highProtect)/4;
-        if(_t<0){_t=_t*-1}
-        
+        var _t = ($("#root").height() - highProtect) / 4;
+        if (_t < 0) { _t = _t * -1 }
+
         if (scale < 1) {
             setTimeout(() => {
                 $("#scale").css("transform", "scale(" + scale + ")");
@@ -81,24 +81,24 @@ const AppOrtion = () => {
         } else {
             scale = 1;
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
+                $("#scale").css("transform", "scale(" + scale + ") translateY(" + _t + "px)");
             }, 10);
         }
     } else {
-       // gHight = $("#root").height() / 850;
+        // gHight = $("#root").height() / 850;
         // scale = (scale + gHight)/2;
-      //  scale = gHight;
-      var _t = ($("#root").height() - highProtect)/4;
-   if(_t<0){_t=_t*-1}
+        //  scale = gHight;
+        var _t = ($("#root").height() - highProtect) / 4;
+        if (_t < 0) { _t = _t * -1 }
         if (scale < 1) {
-            
+
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
+                $("#scale").css("transform", "scale(" + scale + ") translateY(" + _t + "px)");
             }, 10);
         } else {
             scale = 1;
             setTimeout(() => {
-                $("#scale").css("transform", "scale(" + scale + ") translateY("+_t+"px)");
+                $("#scale").css("transform", "scale(" + scale + ") translateY(" + _t + "px)");
             }, 10);
         }
     }
@@ -115,7 +115,7 @@ window.addEventListener("message", function (event) {
         };
         try {
             socket.send(JSON.stringify(payLoad));
-        } catch (error) {}
+        } catch (error) { }
     }
 });
 var supportsOrientationChange = "onorientationchange" in window,
@@ -180,59 +180,59 @@ function getSum(pNumber) {
                 haveAce = true;
                 _val = _val[0];
             }
-            
+
             mysum = mysum + parseInt(_val);
         });
-        if (haveAce) {
-            if (mysum + 10 <= 21) {
-                mysum = mysum + 10;
-            }
+    if (haveAce) {
+        if (mysum + 10 <= 21) {
+            mysum = mysum + 10;
         }
+    }
     return mysum;
 }
 
-function animateNum(){
-    $('.counter').each(function() {
+function animateNum() {
+    $('.counter').each(function () {
         var $this = $(this),
             countTo = $this.attr('data-count'),
-            countFrom= $this.attr('start-num')?$this.attr('start-num'):parseInt($this.text().replace(/,/g,""));
-            
-            if(countTo!=countFrom && !$this.hasClass('doing')) {
-                $this.attr('start-num',countFrom);
+            countFrom = $this.attr('start-num') ? $this.attr('start-num') : parseInt($this.text().replace(/,/g, ""));
+
+        if (countTo != countFrom && !$this.hasClass('doing')) {
+            $this.attr('start-num', countFrom);
             // $this.addClass("doing");
 
-        $({ countNum: countFrom}).animate({
-          countNum: countTo
-        },
-      
-        {
-      
-          duration: 400,
-          easing:'linear',
-          
-           step: function() {
-             //$this.attr('start-num',Math.floor(this.countNum));
-             $this.text(doCurrency(Math.floor(this.countNum)));
-           },
-          complete: function() {
-            $this.text(doCurrency(this.countNum));
-            $this.attr('start-num',Math.floor(this.countNum));
-            //$this.removeClass("doing");
-            //alert('finished');
-          }
-      
-        });  
-        
-        
-    }else{
-        if($this.hasClass('doing')) {
-            $this.attr('start-num',countFrom);
-        $this.removeClass("doing");
-        }else{
-            $this.attr('start-num',countFrom);
+            $({ countNum: countFrom }).animate({
+                countNum: countTo
+            },
+
+                {
+
+                    duration: 400,
+                    easing: 'linear',
+
+                    step: function () {
+                        //$this.attr('start-num',Math.floor(this.countNum));
+                        $this.text(doCurrency(Math.floor(this.countNum)));
+                    },
+                    complete: function () {
+                        $this.text(doCurrency(this.countNum));
+                        $this.attr('start-num', Math.floor(this.countNum));
+                        //$this.removeClass("doing");
+                        //alert('finished');
+                    }
+
+                });
+
+
+        } else {
+            if ($this.hasClass('doing')) {
+                $this.attr('start-num', countFrom);
+                $this.removeClass("doing");
+            } else {
+                $this.attr('start-num', countFrom);
+            }
         }
-    }
-      });
+    });
 }
 const BlackjackGame = () => {
     var _countBet = 0;
@@ -268,7 +268,7 @@ const BlackjackGame = () => {
             //console.log("Game data received: ", data);
             if (data.method === "tables") {
                 setGamesDataLive(data.games);
-                if (data.gameId === $("#gameId").text() || $("#gameId").text() === "") {
+                if (data.gameId === $("#gameId").text() || $("#gameId").text() === "" || !data.gameId) {
                     setGamesData(data.games);
 
                     // Update kardan state
@@ -285,7 +285,7 @@ const BlackjackGame = () => {
                         clickFiller.play();
                     }
                 }
-                
+
             }
             if (data.method === "connect") {
                 if (data.theClient?.balance >= 0) {
@@ -295,6 +295,10 @@ const BlackjackGame = () => {
                     // setConn(false);
                     //_auth = null;
                 }
+                setInterval(() => {
+
+                    socket.send(JSON.stringify({ method: "ping" }));
+                }, 15000);
                 // Update kardan state
             }
             if (data.method === "timer") {
@@ -309,9 +313,9 @@ const BlackjackGame = () => {
                 if (data.gameId === $("#gameId").text()) {
                     dealingSound.play();
                 }
-              
+
             }
-           
+
         };
 
         // Event onclose baraye vaghti ke websocket baste mishe
@@ -353,7 +357,7 @@ const BlackjackGame = () => {
         if (gamesData.length && gameId !== 0) {
             var _data = gamesData.filter((game) => game?.id === gameId)[0];
             setGameDataLive(_data);
-            
+
             $("#decision").show();
             if (!last) {
                 setGameData(_data);
@@ -408,9 +412,15 @@ const BlackjackGame = () => {
         } else {
             setGameData(gameDataLive);
         }
-       
-       
+
+
     }, [last, gameDataLive, gameId]);
+    useEffect(() => {
+        if(userData!=null){socket.send(JSON.stringify({ method: "tableid", gameId: gameId }));}
+ 
+        
+
+    }, [gameId]);
     // Agar gaData nist, ye matn "Loading" neshan bede
     if (_auth === null || !conn) {
         return <LoaderPage errcon={true} />;
@@ -514,8 +524,8 @@ const BlackjackGame = () => {
                     <div id="dealer" className={gameData.dealer.cards.length > 1 && last === false ? "curdealer" : ""}>
                         <h1>DEALER</h1>
                         {gameData.dealer?.sum > 0 && (
-                            <div id="dealerSum" className={gameData.dealer?.sum > 21 ? "result-lose result-bust counter" : "counter"}  data-count={gameData.dealer?.sum}>
-                                
+                            <div id="dealerSum" className={gameData.dealer?.sum > 21 ? "result-lose result-bust counter" : "counter"} data-count={gameData.dealer?.sum}>
+
                             </div>
                         )}
                         {gameData.dealer?.cards.length > 0 && (
@@ -662,10 +672,10 @@ const BlackjackGame = () => {
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
-                                                                            if(!gameData.gameOn){
-                                                                            $("#slot" + pNumber + "  #bets-container-left .sides .betButtons").addClass("noclick animate__faster animate__zoomOut animate__animated");
-                                                                            chipPlace.play();
-                                                                            socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }));
+                                                                            if (!gameData.gameOn) {
+                                                                                $("#slot" + pNumber + "  #bets-container-left .sides .betButtons").addClass("noclick animate__faster animate__zoomOut animate__animated");
+                                                                                chipPlace.play();
+                                                                                socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "PerfectPer" }));
                                                                             }
                                                                         }}
                                                                     >
@@ -677,43 +687,43 @@ const BlackjackGame = () => {
                                                         <span className={player?.sideppx > 0 ? "winner" : ""}>
                                                             {player?.sideppx > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.sideppx}</div>}
                                                             {sidePPPlayer ? (
-                                                                        <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
-                                                                            {doCurrencyMil(sidePPPlayer)}
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner  animate__faster animate__animated animate__zoomInUp " : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
-                                                                            Perfect
-                                                                            <br />
-                                                                            Pairs
-                                                                        </button>
-                                                                        
-                                                                    )}
+                                                                <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === sidePPPlayer / 1000)}>
+                                                                    {doCurrencyMil(sidePPPlayer)}
+                                                                </button>
+                                                            ) : (
+                                                                <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.sideppx > 0 ? "betButtons place winner  animate__faster animate__animated animate__zoomInUp " : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
+                                                                    Perfect
+                                                                    <br />
+                                                                    Pairs
+                                                                </button>
+
+                                                            )}
                                                             {allBet.length > 0 && (
-                                    <div className={"player-coin all"}>
-                                        {allBet.map(function (player, pNumber) {
-                                            return (
-                                                <Popup
-                                                    key={pNumber}
-                                                    size="mini"
-                                                    inverted
-                                                    trigger={
-                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: (pNumber * -15) }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
-                                                            {doCurrencyMil(player.amount)}
-                                                        </button>
-                                                    }
-                                                    content={
-                                                        <div style={{minWidth:120}}>
-                                                            <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
-                                                            {player.nickname}
-                                                            <br />
-                                                            <small>{doCurrencyMil(player.amount)}</small>
-                                                        </div>
-                                                    }
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                                                <div className={"player-coin all"}>
+                                                                    {allBet.map(function (player, pNumber) {
+                                                                        return (
+                                                                            <Popup
+                                                                                key={pNumber}
+                                                                                size="mini"
+                                                                                inverted
+                                                                                trigger={
+                                                                                    <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * 5, top: (pNumber * -15) }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
+                                                                                        {doCurrencyMil(player.amount)}
+                                                                                    </button>
+                                                                                }
+                                                                                content={
+                                                                                    <div style={{ minWidth: 120 }}>
+                                                                                        <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
+                                                                                        {player.nickname}
+                                                                                        <br />
+                                                                                        <small>{doCurrencyMil(player.amount)}</small>
+                                                                                    </div>
+                                                                                }
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
                                                         </span>
                                                     </div>
                                                     <div id="bets-container-right">
@@ -726,10 +736,10 @@ const BlackjackGame = () => {
                                                                         id={"chip" + i}
                                                                         value={bet * 1000}
                                                                         onClick={() => {
-                                                                            if(!gameData.gameOn){
-                                                                            $("#slot" + pNumber + " #bets-container-right .sides .betButtons").addClass("noclick animate__faster animate__zoomOut animate__animated");
-                                                                            chipPlace.play();
-                                                                            socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }));
+                                                                            if (!gameData.gameOn) {
+                                                                                $("#slot" + pNumber + " #bets-container-right .sides .betButtons").addClass("noclick animate__faster animate__zoomOut animate__animated");
+                                                                                chipPlace.play();
+                                                                                socket.send(JSON.stringify({ method: "sidebet", amount: bet * 1000, theClient: userData, gameId: gameData.id, seat: pNumber, mode: "21+3" }));
                                                                             }
                                                                         }}
                                                                     >
@@ -740,42 +750,42 @@ const BlackjackGame = () => {
                                                         <span className={player?.side213x > 0 ? "winner" : ""}>
                                                             {player?.side213x > 0 && <div className="bets-side-win animate__animated animate__fadeInUp">x{player?.side213x}</div>}
                                                             {side213layer ? (
-                                                                        <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
-                                                                            {doCurrencyMil(side213layer)}
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
-                                                                            21
-                                                                            <br />+ 3
-                                                                        </button>
-                                                                    )}
-                                                             {allBet21.length > 0 && (
-                                    <div className={"player-coin all right"}>
-                                        {allBet21.map(function (player, pNumber) {
-                                            return (
-                                                <Popup
-                                                    key={pNumber}
-                                                    size="mini"
-                                                    inverted
-                                                     on='hover'
-                                                    trigger={
-                                                        <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * -5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
-                                                            {doCurrencyMil(player.amount)}
-                                                        </button>
-                                                    }
-                                                    content={
-                                                        <div style={{minWidth:120}}>
-                                                            <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
-                                                            {player.nickname}
-                                                            <br />
-                                                            <small>{doCurrencyMil(player.amount)}</small>
-                                                        </div>
-                                                    }
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                                                <button className="betButtons  noclick animate__animated animate__rotateIn" id={"chip" + _renge.findIndex((bet) => bet === side213layer / 1000)}>
+                                                                    {doCurrencyMil(side213layer)}
+                                                                </button>
+                                                            ) : (
+                                                                <button onClick={() => $("#sidebetbtn").trigger("click")} className={player?.side213x > 0 ? "betButtons place winner animate__faster animate__animated animate__zoomInUp" : "betButtons place  animate__faster animate__animated animate__zoomInUp "}>
+                                                                    21
+                                                                    <br />+ 3
+                                                                </button>
+                                                            )}
+                                                            {allBet21.length > 0 && (
+                                                                <div className={"player-coin all right"}>
+                                                                    {allBet21.map(function (player, pNumber) {
+                                                                        return (
+                                                                            <Popup
+                                                                                key={pNumber}
+                                                                                size="mini"
+                                                                                inverted
+                                                                                on='hover'
+                                                                                trigger={
+                                                                                    <button className="betButtons  animate__animated animate__zoomInDown" style={{ animationDelay: (pNumber + 1) * 50 + "ms", left: pNumber * -5, top: pNumber * -15 }} id={"chip" + _renge.findIndex((bet) => bet == player.amount / 1000)}>
+                                                                                        {doCurrencyMil(player.amount)}
+                                                                                    </button>
+                                                                                }
+                                                                                content={
+                                                                                    <div style={{ minWidth: 120 }}>
+                                                                                        <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
+                                                                                        {player.nickname}
+                                                                                        <br />
+                                                                                        <small>{doCurrencyMil(player.amount)}</small>
+                                                                                    </div>
+                                                                                }
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
                                                         </span>
                                                     </div>
                                                 </>
@@ -841,7 +851,7 @@ const BlackjackGame = () => {
                                                 </div>
                                             )}
 
-                                            {player.sum > 0 && <div className={gameData.currentPlayer === pNumber ? "current-player-highlight player-sum counter" : "player-sum counter " + _resClass}  data-count={player.sum}></div>}
+                                            {player.sum > 0 && <div className={gameData.currentPlayer === pNumber ? "current-player-highlight player-sum counter" : "player-sum counter " + _resClass} data-count={player.sum}></div>}
                                             {player.bet > 0 ? (
                                                 <div className={"player-coin"}>
                                                     {player.isDouble ? (
