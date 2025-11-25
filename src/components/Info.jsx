@@ -1,5 +1,5 @@
 import React from "react";
-import { ModalContent, Button, Icon, Modal } from "semantic-ui-react";
+import { ModalContent, Button, Icon, Modal,ModalHeader } from "semantic-ui-react";
 
 const doCurrency = (value) => {
   var val = value?.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
@@ -21,7 +21,7 @@ const ModalExampleScrollingContent = (prop) => {
 
     return (
         <span id="leave-button">
-            <Button basic inverted color="grey" size="mini" style={{ position: "relative", marginBottom: 10 }} onClick={() => prop.setGameId(0)} icon labelPosition="left">
+            <Button basic inverted color="grey" size="large" style={{ position: "relative", marginBottom: 10 }} onClick={() => prop.setGameId(0)} icon labelPosition="left">
                 <Icon name="arrow left" />
                 EXIT <span id="gameId">{prop.gameId}</span>
             </Button>
@@ -30,16 +30,18 @@ const ModalExampleScrollingContent = (prop) => {
                 onClose={() => setOpen(false)}
                 onOpen={() => setOpen(true)}
                 size="tiny"
+                dimmer="blurring"
                 trigger={
-                    <Button basic inverted color="grey" size="mini" style={{ position: "relative", display: "block" }} id="sidebetbtn" icon labelPosition="left">
+                    <Button basic inverted color="grey" size="large" style={{ position: "relative", display: "block" }} id="sidebetbtn" icon labelPosition="left">
                         <Icon name="info" />
                         SIDE BETS
                     </Button>
                 }
             >
+                <ModalHeader>SIDE BETS</ModalHeader>
                 <ModalContent scrolling>
                     <article >
-                        <h2 id="perfect-pairs-blackj">Perfect Pairs Blackjack Side Bet</h2>
+                        <h4 id="perfect-pairs-blackj">Perfect Pairs Blackjack Side Bet</h4>
                         <p>What is Perfect Pairs in Blackjack? The Perfect Pairs side bet uses the player’s cards only and pays out if you are dealt two of a kind as follows:</p>
                         <p>Mixed pair (two of the same value but different suits and colors) – pays 5:1</p>
                         <img className="content-img"  src="/imgs/info/bac55199ac.jpg" alt="mp" />
@@ -48,7 +50,7 @@ const ModalExampleScrollingContent = (prop) => {
                         <p>Perfect pair (two of the same card) – pays 25:1</p>
                         <img className="content-img"  src="/imgs/info/babf3ee265.jpg" alt="pp" />
                         <hr />
-                        <h2 id="21-3-blackjack-side">21+3 Blackjack Side Bet</h2>
+                        <h4 id="21-3-blackjack-side">21+3 Blackjack Side Bet</h4>
                         <p>What is 21+3 in Blackjack? The 21+3 side bet involves the player’s two cards and the upturned card of the dealer. It will pay out for a number of different combinations:</p>
                         <p>
                             <b>Flush</b> – (all cards are suited) – pays 5:1
@@ -73,14 +75,14 @@ const ModalExampleScrollingContent = (prop) => {
                     </article>
                 </ModalContent>
             </Modal>
-            <div id="balance-bet-box" style={{top:80, right: -33}}>
+            <div id="balance-bet-box" style={{top:105, right: -30}}>
             <div className="balance-bet">
                         Total Bets
-                       <div id="total-bet" className="counter" data-count={prop.totalBetAll}></div>
+                       <div id="total-bet" className="counter" data-count={prop.totalBetAll}>0</div>
                     </div>
                     <div className="balance-bet">
                         Total Wins
-                        <div id="total-bet" className="counter" data-count={prop.totalWinAll}></div>
+                        <div id="total-bet" className="counter" data-count={prop.totalWinAll}>0</div>
                    
                     </div></div>
         </span>
