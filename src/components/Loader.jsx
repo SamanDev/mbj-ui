@@ -1,4 +1,4 @@
-import { Dimmer, Loader, Icon, IconGroup, Segment } from "semantic-ui-react";
+import { Dimmer, Loader, Icon, IconGroup } from "semantic-ui-react";
 
 const LoaderExampleLoader = (prop) => {
     return(<div><div className="game-room" id="scale">

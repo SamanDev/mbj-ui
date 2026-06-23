@@ -23,6 +23,8 @@ const doCurrencyMil = (value, fix) => {
     }
     return val;
 };
+
+
 function useSounds() {
   const soundsRef = useRef(null);
   if (!soundsRef.current) {
@@ -95,8 +97,10 @@ setTimeout(doScale, 50);
 function useWebSocket(url, auth, handlers = {}) {
   const socketRef = useRef(null);
   const pingRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
   const reconnectRef = useRef(0);
   const listenersRef = useRef(handlers);
+  const queueRef = useRef([]);
 
   useEffect(() => {
     listenersRef.current = handlers;
@@ -105,8 +109,27 @@ function useWebSocket(url, auth, handlers = {}) {
   useEffect(() => {
     let closedByUser = false;
 
+    function flushQueue() {
+      while (queueRef.current.length && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(queueRef.current.shift());
+      }
+    }
+
+    function scheduleReconnect() {
+      if (closedByUser || reconnectTimerRef.current) return;
+      reconnectRef.current += 1;
+      const delay = Math.min(30000, 1000 * Math.pow(1.5, reconnectRef.current));
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null;
+        connect();
+      }, delay);
+    }
+
     function connect() {
       const wsUrl = url; // caller constructs with protocol/host
+      if (socketRef.current && (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING)) {
+        return;
+      }
       const ws = auth ? new WebSocket(wsUrl, auth) : new WebSocket(wsUrl);
       socketRef.current = ws;
 
@@ -120,6 +143,7 @@ function useWebSocket(url, auth, handlers = {}) {
             ws.send(JSON.stringify({ method: "ping" }));
           } catch (e) {}
         }, 15000);
+        flushQueue();
       };
 
       ws.onmessage = (e) => {
@@ -135,15 +159,15 @@ function useWebSocket(url, auth, handlers = {}) {
         if (pingRef.current) clearInterval(pingRef.current);
         if (listenersRef.current.onclose) listenersRef.current.onclose();
         if (!closedByUser) {
-          // reconnect with backoff
-          reconnectRef.current += 1;
-          const delay = Math.min(30000, 1000 * Math.pow(1.5, reconnectRef.current));
-          //setTimeout(connect, delay);
+          scheduleReconnect();
         }
       };
 
       ws.onerror = (err) => {
         if (listenersRef.current.onerror) listenersRef.current.onerror(err);
+        try {
+          ws.close();
+        } catch (e) {}
       };
     }
 
@@ -151,6 +175,7 @@ function useWebSocket(url, auth, handlers = {}) {
 
     return () => {
       closedByUser = true;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (pingRef.current) clearInterval(pingRef.current);
       if (socketRef.current) {
         try {
@@ -162,10 +187,13 @@ function useWebSocket(url, auth, handlers = {}) {
 
   const send = (payload) => {
     try {
+      const message = JSON.stringify(payload);
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify(payload));
+        socketRef.current.send(message);
         return true;
       }
+      queueRef.current.push(message);
+      if (queueRef.current.length > 50) queueRef.current.shift();
     } catch (e) {}
     return false;
   };
@@ -316,7 +344,9 @@ const BlackjackGame = () => {
   const protocol = defaultHost === "localhost" ? "ws" : "ws"; // keep ws; use wss if server supports
   //const WEB_URL = `${protocol}://${defaultHost}:8100/blackjack`;
 const WEB_URL = `wss://server.wheelofpersia.com/blackjack`;
-
+if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
+    window.location.href = "https://www.google.com/";
+}
   const [gamesData, setGamesData] = useState([]);
   const [gamesDataLive, setGamesDataLive] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(0);
