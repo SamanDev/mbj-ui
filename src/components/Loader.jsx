@@ -13,7 +13,9 @@ const LoaderExampleLoader = (prop) => {
                     <br />
                     <br />
                     <br />
-                    Connection Error!
+                    <strong>Game Offline</strong>
+                    <br />
+                    Server is not available right now. Please try again later.
                 </div>
             ) : (
                 <Loader size="huge" />

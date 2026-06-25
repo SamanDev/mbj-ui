@@ -23,8 +23,48 @@ const doCurrencyMil = (value, fix) => {
     }
     return val;
 };
+const playerLevelInfo = (player = {}) => {
+    const levelFromAvatar = String(player.avatar || "").replace("lvl", "");
+    const level = Number(player.level ?? levelFromAvatar) || 1;
+    const levelPoint = Number(player.levelPoint ?? player.casinoLevelPoint ?? 0) || 0;
+    const levelPointMax = Number(player.levelPointMax ?? 0) || 0;
+    const progress = levelPointMax > 0 ? Math.max(0, Math.min(100, (levelPoint / levelPointMax) * 100)) : 0;
+    return { level, levelPoint, levelPointMax, progress };
+};
 
+const PlayerProgressInfo = ({ player }) => {
+    if (!player?.nickname) {
+        return null;
+    }
+    const info = playerLevelInfo(player);
+    if (info.levelPointMax <= 0) {
+        return null;
+    }
+    return (
+        <div className="player-level-progress" title={`${doCurrency(info.levelPoint)} / ${doCurrency(info.levelPointMax)}`}>
+            <i style={{ width: `${info.progress}%` }} />
+        </div>
+    );
+};
 
+const PlayerNamePlate = ({ player, active }) => {
+    if (!player?.nickname) {
+        return null;
+    }
+    const info = playerLevelInfo(player);
+    const avatar = player.avatar || `lvl${info.level}`;
+    return (
+        <div className={active ? "player-name highlight" : "player-name"}>
+            <div className="player-name-row">
+                <span className="player-level-star">
+                    <img className="player-avatar" src={"/imgs/avatars/" + avatar + ".webp"} alt="avatar" />
+                </span>
+                <span className="player-nickname">{player.nickname}</span>
+            </div>
+            <PlayerProgressInfo player={player} />
+        </div>
+    );
+};
 function useSounds() {
   const soundsRef = useRef(null);
   if (!soundsRef.current) {
@@ -99,6 +139,8 @@ function useWebSocket(url, auth, handlers = {}) {
   const pingRef = useRef(null);
   const reconnectTimerRef = useRef(null);
   const reconnectRef = useRef(0);
+  const offlineNotifiedRef = useRef(false);
+  const maxReconnectAttempts = 5;
   const listenersRef = useRef(handlers);
   const queueRef = useRef([]);
 
@@ -117,6 +159,12 @@ function useWebSocket(url, auth, handlers = {}) {
 
     function scheduleReconnect() {
       if (closedByUser || reconnectTimerRef.current) return;
+      if (reconnectRef.current >= maxReconnectAttempts && !offlineNotifiedRef.current) {
+        if (!offlineNotifiedRef.current && listenersRef.current.onclose) {
+          offlineNotifiedRef.current = true;
+          listenersRef.current.onclose();
+        }
+      }
       reconnectRef.current += 1;
       const delay = Math.min(30000, 1000 * Math.pow(1.5, reconnectRef.current));
       reconnectTimerRef.current = setTimeout(() => {
@@ -134,6 +182,10 @@ function useWebSocket(url, auth, handlers = {}) {
       socketRef.current = ws;
 
       ws.onopen = () => {
+        if (offlineNotifiedRef.current) {
+          window.location.reload();
+          return;
+        }
         reconnectRef.current = 0;
         if (listenersRef.current.onopen) listenersRef.current.onopen();
         // start ping
@@ -157,9 +209,14 @@ function useWebSocket(url, auth, handlers = {}) {
 
       ws.onclose = () => {
         if (pingRef.current) clearInterval(pingRef.current);
-        if (listenersRef.current.onclose) listenersRef.current.onclose();
         if (!closedByUser) {
+          if (!offlineNotifiedRef.current && listenersRef.current.onclose) {
+            offlineNotifiedRef.current = true;
+            listenersRef.current.onclose();
+          }
           scheduleReconnect();
+        } else if (listenersRef.current.onclose) {
+          listenersRef.current.onclose();
         }
       };
 
@@ -202,12 +259,16 @@ function useWebSocket(url, auth, handlers = {}) {
 }
 
 /* --------------------------- Small Subcomponents ----------------------- */
+const occupiedSeatCount = (game) => {
+  return (game.players || []).filter((seat) => Boolean(seat?.nickname)).length;
+};
+
 function TableList({ games, onSelect }) {
   return (
     <div>
     <ul className="tilesWrap game-room" id="scale">
       {games.map((game, i) => {
-        const players = (game.players || []).filter((p) => p.nickname).length;
+        const players = occupiedSeatCount(game);
         return (
          <li onClick={() => onSelect(game.id)} key={i}>
                                 <h2>
@@ -338,15 +399,27 @@ var refresh;
 const BlackjackGame = () => {
     const loc = typeof window !== "undefined" ? new URL(window.location) : { pathname: "/" };
   const pathArr = loc.pathname.toString().split("/").filter(Boolean);
-  const auth = pathArr.length === 2 ? `${pathArr[0]}___${pathArr[1]}` : null;
+  const isUiTest = process.env.REACT_APP_UI_TEST === "1";
+  const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  const devParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const auth = pathArr.length === 2
+    ? `${pathArr[0]}___${pathArr[1]}`
+    : isUiTest && isLocalDevHost && process.env.REACT_APP_DEV_BOT_SECRET
+      ? `${devParams.get("prefix") || process.env.REACT_APP_DEV_BOT_PREFIX || "casino-games-local-test-"}${devParams.get("user") || process.env.REACT_APP_DEV_USERNAME || "LocalBlackjackTester"}${devParams.get("balance") ? `__testbalance__${devParams.get("balance")}` : ""}___${process.env.REACT_APP_DEV_BOT_SECRET}`
+    : null;
 
   const defaultHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const protocol = defaultHost === "localhost" ? "ws" : "ws"; // keep ws; use wss if server supports
-  //const WEB_URL = `${protocol}://${defaultHost}:8100/blackjack`;
-const WEB_URL = `wss://server.wheelofpersia.com/blackjack`;
-if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
+  const WEB_URL = isUiTest && process.env.REACT_APP_GAME_SERVER_URL
+    ? process.env.REACT_APP_GAME_SERVER_URL
+    : process.env.NODE_ENV === "production" ? `wss://server.wheelofpersia.com/blackjack` : `ws://${defaultHost}:8100/blackjack`;
+  if (!isUiTest && typeof window !== "undefined" && window.self === window.top && WEB_URL.indexOf("localhost") === -1) {
     window.location.href = "https://www.google.com/";
-}
+  }
+  const uiTestBalance = (() => {
+    const value = Number(devParams.get("balance"));
+    return isUiTest && Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+  })();
+  const applyUiTestBalance = (client) => client && uiTestBalance !== null ? { ...client, balance: uiTestBalance } : client;
   const [gamesData, setGamesData] = useState([]);
   const [gamesDataLive, setGamesDataLive] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(0);
@@ -354,6 +427,7 @@ if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
   const [gameData, setGameData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [conn, setConn] = useState(false);
+  const [connectionFailed, setConnectionFailed] = useState(false);
   const [gameTimer, setGameTimer] = useState(-1);
   const [lastMode, setLastMode] = useState(false);
 
@@ -364,6 +438,11 @@ if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
   const onWsMessage = (data) => {
     if (!data || typeof data !== "object") return;
     const { method } = data;
+    if (method === "gameOffline") {
+      setConn(false);
+      setConnectionFailed(true);
+      return;
+    }
     if (method === "tables") {
       const games = data.games || [];
       setGamesDataLive(games);
@@ -391,7 +470,7 @@ if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
 
     if (method === "connect") {
       if (data.theClient) {
-        setUserData(data.theClient);
+        setUserData(applyUiTestBalance(data.theClient));
         setConn(true);
       }
       
@@ -428,13 +507,13 @@ if (window.self === window.top && WEB_URL.indexOf("localhost") == -1) {
 
   const { send, socketRef } = useWebSocket(WEB_URL, auth, {
     onopen: () => {
-      
-      //setConn(true);
+      setConnectionFailed(false);
     },
     onmessage: onWsMessage,
     onclose: () => {
       console.log("WS closed");
       setConn(false);
+      setConnectionFailed(true);
     },
     onerror: () => {
       console.log("WS error");
@@ -566,6 +645,7 @@ setTimeout(() => {
     
     // Agar gaData nist, ye matn "Loading" neshan bede
    
+  if (connectionFailed) return <LoaderPage errcon={true} />;
   if (!gamesDataLive || !userData) return <LoaderPage />;
    if (!conn) return <LoaderPage errcon={true} />;
 
@@ -804,6 +884,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                                                     <div style={{ minWidth: 120 }}>
                                                                                         <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
                                                                                         {player.nickname}
+                                                                                        <PlayerProgressInfo player={player} />
                                                                                         <br />
                                                                                         <small>{doCurrencyMil(player.amount)}</small>
                                                                                     </div>
@@ -866,6 +947,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                                                     <div style={{ minWidth: 120 }}>
                                                                                         <img src={"/imgs/avatars/" + player?.avatar + ".webp"} style={{ height: 30, marginRight: 10, float: "left" }} />
                                                                                         {player.nickname}
+                                                                                        <PlayerProgressInfo player={player} />
                                                                                         <br />
                                                                                         <small>{doCurrencyMil(player.amount)}</small>
                                                                                     </div>
@@ -932,12 +1014,10 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                     )}
                                                 </div>
                                             ) : (
-                                                <div className={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 ? "player-name highlight" : "player-name"}>
-                                                    {player.nickname}
-                                                    <span className="hide-element">
-                                                        <img className="player-avatar" src={"/imgs/avatars/" + player.avatar + ".webp"} alt="avatar" />
-                                                    </span>
-                                                </div>
+                                                <PlayerNamePlate
+                                                    player={player}
+                                                    active={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0}
+                                                />
                                             )}
 
                                             {player.sum > 0 && <div className={gameData.currentPlayer === pNumber ? "current-player-highlight player-sum counter" : "player-sum counter " + _resClass} data-count={player.sum}>0</div>}

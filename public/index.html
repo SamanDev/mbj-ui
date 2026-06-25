@@ -52,7 +52,8 @@
   <div id="root"></div>
   <div class="hidden">
     <script>
-      if (window.self === window.top && window.location.href.indexOf("localhost") == -1) {
+      const localHosts = ["localhost", "127.0.0.1", "::1"];
+      if (window.self === window.top && !localHosts.includes(window.location.hostname)) {
         window.location.href = "https://www.google.com/";
       }
       var images = new Array()
