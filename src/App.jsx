@@ -139,7 +139,7 @@ function useWebSocket(url, auth, handlers = {}) {
   const reconnectTimerRef = useRef(null);
   const reconnectRef = useRef(0);
   const offlineNotifiedRef = useRef(false);
-  const maxReconnectAttempts = 5;
+  const maxReconnectAttempts = 3;
   const listenersRef = useRef(handlers);
   const queueRef = useRef([]);
 
@@ -149,6 +149,8 @@ function useWebSocket(url, auth, handlers = {}) {
 
   useEffect(() => {
     let closedByUser = false;
+    let openedOnce = false;
+    let initialConnectTimer = null;
 
     function flushQueue() {
       while (queueRef.current.length && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -166,7 +168,7 @@ function useWebSocket(url, auth, handlers = {}) {
         return;
       }
       reconnectRef.current += 1;
-      const delay = Math.min(30000, 1000 * Math.pow(1.5, reconnectRef.current));
+      const delay = Math.min(5000, 1000 * Math.pow(1.5, reconnectRef.current));
       reconnectTimerRef.current = setTimeout(() => {
         reconnectTimerRef.current = null;
         connect();
@@ -180,8 +182,19 @@ function useWebSocket(url, auth, handlers = {}) {
       }
       const ws = auth ? new WebSocket(wsUrl, auth) : new WebSocket(wsUrl);
       socketRef.current = ws;
+      initialConnectTimer = setTimeout(() => {
+        if (!openedOnce && ws.readyState === WebSocket.CONNECTING) {
+          offlineNotifiedRef.current = true;
+          if (listenersRef.current.onclose) listenersRef.current.onclose();
+          try {
+            ws.close();
+          } catch (e) {}
+        }
+      }, 6000);
 
       ws.onopen = () => {
+        openedOnce = true;
+        if (initialConnectTimer) clearTimeout(initialConnectTimer);
         if (offlineNotifiedRef.current) {
           window.location.reload();
           return;
@@ -209,6 +222,7 @@ function useWebSocket(url, auth, handlers = {}) {
 
       ws.onclose = () => {
         if (pingRef.current) clearInterval(pingRef.current);
+        if (initialConnectTimer) clearTimeout(initialConnectTimer);
         if (!closedByUser) {
           scheduleReconnect();
         }
@@ -227,6 +241,7 @@ function useWebSocket(url, auth, handlers = {}) {
     return () => {
       closedByUser = true;
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (initialConnectTimer) clearTimeout(initialConnectTimer);
       if (pingRef.current) clearInterval(pingRef.current);
       if (socketRef.current) {
         try {
@@ -735,7 +750,6 @@ setTimeout(() => {
   if (connectionFailed) return <LoaderPage errcon={true} />;
   if (!gamesDataLive || !userData) return <LoaderPage />;
    if (!conn && !hasEverConnected) return <LoaderPage />;
-   if (!conn) return <LoaderPage />;
 
    if (!gameData || selectedGameId <= 0) {
     return <TableList games={gamesData} onSelect={
