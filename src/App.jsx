@@ -190,7 +190,7 @@ function useWebSocket(url, auth, handlers = {}) {
             ws.close();
           } catch (e) {}
         }
-      }, 6000);
+      }, 3000);
 
       ws.onopen = () => {
         openedOnce = true;
