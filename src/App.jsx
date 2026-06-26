@@ -27,7 +27,7 @@ const playerLevelInfo = (player = {}) => {
     const levelFromAvatar = String(player.avatar || "").replace("lvl", "");
     const level = Number(player.level ?? levelFromAvatar) || 1;
     const levelPoint = Number(player.levelPoint ?? player.casinoLevelPoint ?? 0) || 0;
-    const levelPointMax = Number(player.levelPointMax ?? 0) || 0;
+    const levelPointMax = Number(player.levelPointMax ?? player.casinoLevelPointMax ?? 1000000) || 1000000;
     const progress = levelPointMax > 0 ? Math.max(0, Math.min(100, (levelPoint / levelPointMax) * 100)) : 0;
     return { level, levelPoint, levelPointMax, progress };
 };
@@ -37,9 +37,6 @@ const PlayerProgressInfo = ({ player }) => {
         return null;
     }
     const info = playerLevelInfo(player);
-    if (info.levelPointMax <= 0) {
-        return null;
-    }
     return (
         <div className="player-level-progress" title={`${doCurrency(info.levelPoint)} / ${doCurrency(info.levelPointMax)}`}>
             <i style={{ width: `${info.progress}%` }} />
@@ -402,16 +399,29 @@ const BlackjackGame = () => {
   const isUiTest = process.env.REACT_APP_UI_TEST === "1";
   const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
   const devParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const uiTestSecret = devParams.get("secret") || process.env.REACT_APP_DEV_BOT_SECRET;
   const auth = pathArr.length === 2
     ? `${pathArr[0]}___${pathArr[1]}`
-    : isUiTest && isLocalDevHost && process.env.REACT_APP_DEV_BOT_SECRET
-      ? `${devParams.get("prefix") || process.env.REACT_APP_DEV_BOT_PREFIX || "casino-games-local-test-"}${devParams.get("user") || process.env.REACT_APP_DEV_USERNAME || "LocalBlackjackTester"}${devParams.get("balance") ? `__testbalance__${devParams.get("balance")}` : ""}___${process.env.REACT_APP_DEV_BOT_SECRET}`
+    : isUiTest && isLocalDevHost && uiTestSecret
+      ? `${devParams.get("prefix") || process.env.REACT_APP_DEV_BOT_PREFIX || "casino-games-local-test-"}${devParams.get("user") || process.env.REACT_APP_DEV_USERNAME || "LocalBlackjackTester"}${devParams.get("balance") ? `__testbalance__${devParams.get("balance")}` : ""}___${uiTestSecret}`
     : null;
 
   const defaultHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const WEB_URL = isUiTest && process.env.REACT_APP_GAME_SERVER_URL
+  const addUiTestBalanceToWsUrl = (url) => {
+    if (!isUiTest || !devParams.get("balance")) {
+      return url;
+    }
+    try {
+      const wsUrl = new URL(url);
+      wsUrl.searchParams.set("testBalance", devParams.get("balance"));
+      return wsUrl.toString();
+    } catch (error) {
+      return `${url}${url.includes("?") ? "&" : "?"}testBalance=${devParams.get("balance")}`;
+    }
+  };
+  const WEB_URL = addUiTestBalanceToWsUrl(isUiTest && process.env.REACT_APP_GAME_SERVER_URL
     ? process.env.REACT_APP_GAME_SERVER_URL
-    : process.env.NODE_ENV === "production" ? `wss://server.wheelofpersia.com/blackjack` : `ws://${defaultHost}:8100/blackjack`;
+    : process.env.NODE_ENV === "production" ? `wss://server.wheelofpersia.com/blackjack` : `ws://${defaultHost}:8100/blackjack`);
   if (!isUiTest && typeof window !== "undefined" && window.self === window.top && WEB_URL.indexOf("localhost") === -1) {
     window.location.href = "https://www.google.com/";
   }

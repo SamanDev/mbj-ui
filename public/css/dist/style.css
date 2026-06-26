@@ -879,6 +879,8 @@ font-size: 22px !important;
   transform: translateX(-50%);
   transform-origin: center;
   z-index: 18;
+  min-height: 35px;
+  padding: 0;
 }
 
 .highlight {
@@ -941,9 +943,12 @@ font-size: 22px !important;
 .player-level-progress {
   position: relative;
   display: block;
-  width: 128px;
+  width: 116px;
   height: 4px;
+  align-self: center;
   margin-top: 3px;
+  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.48);
