@@ -56,9 +56,11 @@ const PlayerNamePlate = ({ player, active }) => {
                 <span className="player-level-star">
                     <img className="player-avatar" src={"/imgs/avatars/" + avatar + ".webp"} alt="avatar" />
                 </span>
-                <span className="player-nickname">{player.nickname}</span>
+                <span className="player-name-content">
+                    <span className="player-nickname">{player.nickname}</span>
+                    <PlayerProgressInfo player={player} />
+                </span>
             </div>
-            <PlayerProgressInfo player={player} />
         </div>
     );
 };
@@ -464,6 +466,7 @@ const BlackjackGame = () => {
   const [connectionFailed, setConnectionFailed] = useState(false);
   const [gameTimer, setGameTimer] = useState(-1);
   const [lastMode, setLastMode] = useState(false);
+  const [hiddenDecisionKey, setHiddenDecisionKey] = useState(null);
 
   const sounds = useSounds();
 
@@ -479,6 +482,9 @@ const BlackjackGame = () => {
     }
     if (method === "tables") {
       const games = data.games || [];
+      if (!games.length) {
+        return;
+      }
       setGamesDataLive(games);
       // keep small optimization: only update gamesData if current game matches or not set
       const currentGameIdText = String(selectedGameId || "");
@@ -565,13 +571,20 @@ const BlackjackGame = () => {
   useEffect(() => {
     if ((gamesData || []).length && selectedGameId !== 0) {
       const gd = (gamesData || []).find((g) => g?.id === selectedGameId) || null;
-      setGameDataLive(gd);
-      if (gd) setGameData(lastMode ? JSON.parse(localStorage.getItem(String(selectedGameId))) : gd);
-      if (gd?.dealer?.cards?.length > 1) setGameTimer(-1);
+      if (gd) {
+        setGameDataLive(gd);
+        if (lastMode) {
+          const saved = localStorage.getItem(String(selectedGameId));
+          if (saved) setGameData(JSON.parse(saved));
+        } else {
+          setGameData(gd);
+        }
+        if (gd?.dealer?.cards?.length > 1) setGameTimer(-1);
+      }
     }
     if (selectedGameId === 0) {
       setGameData(null);
-      setGamesData(gamesDataLive || []);
+      if ((gamesDataLive || []).length) setGamesData(gamesDataLive);
       setGameTimer(-1);
       sounds.current.timerRunningOut.stop();
     }
@@ -583,10 +596,24 @@ const BlackjackGame = () => {
     if (lastMode) {
       const saved = localStorage.getItem(String(selectedGameId));
       if (saved) setGameData(JSON.parse(saved));
-    } else {
+    } else if (gameDataLive) {
       setGameData(gameDataLive);
     }
   }, [lastMode, gameDataLive, selectedGameId]);
+
+  useEffect(() => {
+    setHiddenDecisionKey((previous) => {
+      if (!previous || !gameData?.players) return previous;
+      const [gameIdText, seatText] = previous.split("-");
+      if (String(gameData.id) !== gameIdText) return null;
+      const seat = Number(seatText);
+      const player = gameData.players[seat];
+      if (!player) return null;
+      const currentKey = `${gameData.id}-${seat}-${player.cards?.length || 0}-${player.sum || 0}-${player.isDouble ? 1 : 0}`;
+      return currentKey === previous ? previous : null;
+    });
+  }, [gameData]);
+
 useEffect(() => {
         // console.log("gameId",gameId)
         if (lastMode) {
@@ -597,16 +624,16 @@ useEffect(() => {
             } else {
 
            
-                if (selectedGameId === gamesData[0].id) {
+                if (gamesData[0] && selectedGameId === gamesData[0].id) {
                     $("body").css("background", "#388183").removeAttr("class").addClass("tabl1");
                 }
-                if (selectedGameId === gamesData[1].id) {
+                if (gamesData[1] && selectedGameId === gamesData[1].id) {
                     $("body").css("background", "#837538").removeAttr("class").addClass("tabl2");
                 }
-                if (selectedGameId === gamesData[2].id) {
+                if (gamesData[2] && selectedGameId === gamesData[2].id) {
                     $("body").css("background", "#723883").removeAttr("class").addClass("tabl3");
                 }
-                if (selectedGameId === gamesData[3].id) {
+                if (gamesData[3] && selectedGameId === gamesData[3].id) {
                     $("body").css("background", "#833838").removeAttr("class").addClass("tabl4");
                 }
             }
@@ -808,6 +835,16 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                             var side213 = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "21+3");
                             var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
                             var allBet21 = getAllBets(gameData.sideBets, player.nickname, pNumber, "21+3");
+                            const decisionKey = `${gameData.id}-${pNumber}-${player.cards.length}-${player.sum}-${player.isDouble ? 1 : 0}`;
+                            const isDecisionTurn =
+                                gameData.gameOn &&
+                                gameData.dealer.hiddencards.length > 0 &&
+                                gameData.currentPlayer === pNumber &&
+                                player.nickname === userData.nickname &&
+                                player.cards.length >= 2 &&
+                                player.sum < 21 &&
+                                !player.isDouble &&
+                                !player.hasLeft;
                             return (
                                 <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 && lastMode === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
                                     {!player?.nickname ? (
@@ -993,8 +1030,12 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                     </div>
                                                 </>
                                             )}
-                                            {gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.currentPlayer === pNumber && player.nickname === userData.nickname && player.cards.length >= 2 && player.sum < 21 ? (
-                                                <div id="decision" className="user-action-container  animate__slideInUp animate__animated">
+                                            {isDecisionTurn && hiddenDecisionKey !== decisionKey ? (
+                                                <div
+                                                    key={`decision-${decisionKey}`}
+                                                    id="decision"
+                                                    className="user-action-container  animate__slideInUp animate__animated"
+                                                >
                                                     <div id="your-turn-label">MAKE A DECISION {gameTimer >= 0 && <span>{gameTimer}</span>}</div>
 
                                                     <div className="user-action-box">
@@ -1002,6 +1043,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                             className="user-action"
                                                             id="stand"
                                                             onClick={() => {
+                                                                setHiddenDecisionKey(decisionKey);
                                                                 $("#decision").hide();
                                                                 $(".user-action").addClass("noclick-nohide");
                                                                sounds.current.actionClick.play();
@@ -1017,7 +1059,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                             className="user-action"
                                                             id="hit"
                                                             onClick={() => {
-                                                                $("#decision").hide();
+                                                                $(".user-action").addClass("noclick-nohide");
                                                                sounds.current.actionClick.play();
                                                                 send({ method: "hit", gameId: gameData.id, seat: pNumber });
                                                             }}
@@ -1032,6 +1074,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                                 className="user-action"
                                                                 id="doubleDown"
                                                                 onClick={() => {
+                                                                    setHiddenDecisionKey(decisionKey);
                                                                     $("#decision").hide();
                                                                     $(".user-action").addClass("noclick-nohide");
                                                                    sounds.current.actionClick.play();
