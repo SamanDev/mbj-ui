@@ -211,8 +211,6 @@ function useWebSocket(url, auth, handlers = {}) {
         if (pingRef.current) clearInterval(pingRef.current);
         if (!closedByUser) {
           scheduleReconnect();
-        } else if (listenersRef.current.onclose) {
-          listenersRef.current.onclose();
         }
       };
 
