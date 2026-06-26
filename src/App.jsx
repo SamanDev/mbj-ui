@@ -289,16 +289,18 @@ function TableList({ games, onSelect }) {
 }
 
 function Dealer({ dealer, last }) {
+  const dealerCards = Array.isArray(dealer?.cards) ? dealer.cards : [];
+  const hiddenCards = Array.isArray(dealer?.hiddencards) ? dealer.hiddencards : [];
   return (
-   <div id="dealer" className={dealer.cards.length > 1 && last === false ? "curdealer" : ""}>
+   <div id="dealer" className={dealerCards.length > 1 && last === false ? "curdealer" : ""}>
                         <h1>DEALER</h1>
                         {dealer?.sum > 0 && (
                             <div id="dealerSum" className={dealer?.sum > 21 ? "result-lose result-bust counter" : "counter"} data-count={dealer?.sum}>0</div>
                         )}
-                        {dealer?.cards.length > 0 && (
-                            <div className="dealer-cards" style={{ marginLeft: dealer?.cards.length * -45 }}>
+                        {dealerCards.length > 0 && (
+                            <div className="dealer-cards" style={{ marginLeft: dealerCards.length * -45 }}>
                                 <div className="visibleCards">
-                                    {dealer?.cards.map(function (card, i) {
+                                    {dealerCards.map(function (card, i) {
                                         var _dClass = "animate__flipInY";
                                         if (i === 1) {
                                             _dClass = "animate__flipInY";
@@ -309,9 +311,9 @@ function Dealer({ dealer, last }) {
                                             </span>
                                         );
                                     })}
-                                    {dealer?.cards.length === 1 && (
+                                    {dealerCards.length === 1 && (
                                         <>
-                                            {dealer?.hiddencards.map(function (card, i) {
+                                            {hiddenCards.map(function (card, i) {
                                                 var _dClass = "animate__flipInY";
 
                                                 return (
@@ -329,6 +331,9 @@ function Dealer({ dealer, last }) {
   );
 }
 const haveSideBet = (sideBets, nickname, seat, mode) => {
+    if (!Array.isArray(sideBets)) {
+        return false;
+    }
     if (sideBets.length === 0) {
         return false;
     }
@@ -343,7 +348,10 @@ const haveSideBet = (sideBets, nickname, seat, mode) => {
     return _have;
 };
 const getAllBets = (sideBets, username, seat, mode) => {
-    var userbet = sideBets.filter((sideBet) => sideBet.seat == seat && sideBet?.mode === mode && sideBet.nickname != username);
+    if (!Array.isArray(sideBets)) {
+        return [];
+    }
+    var userbet = sideBets.filter((sideBet) => sideBet?.seat == seat && sideBet?.mode === mode && sideBet?.nickname != username);
 
     return userbet;
 };
@@ -467,6 +475,7 @@ const BlackjackGame = () => {
   const [gameTimer, setGameTimer] = useState(-1);
   const [lastMode, setLastMode] = useState(false);
   const [hiddenDecisionKey, setHiddenDecisionKey] = useState(null);
+  const [pendingDecisionKey, setPendingDecisionKey] = useState(null);
 
   const sounds = useSounds();
 
@@ -500,7 +509,8 @@ const BlackjackGame = () => {
       if (data.cur) {
         const _data = (games || []).find((game) => game?.id === data.gameId);
         if (_data?.gameOn && _data?.dealer?.hiddencards?.length > 0) {
-          const cur = _data.players[_data.currentPlayer];
+          const livePlayers = Array.isArray(_data.players) ? _data.players : [];
+          const cur = livePlayers[_data.currentPlayer];
           if (cur?.nickname && cur?.nickname === (document.getElementById("nicknameId")?.textContent || userData?.nickname)) {
             sounds.current.clickFiller.play();
           }
@@ -559,6 +569,11 @@ const BlackjackGame = () => {
       console.log("WS error");
     },
   });
+  const sendRef = useRef(send);
+
+  useEffect(() => {
+    sendRef.current = send;
+  }, [send]);
 
   // select game => notify server
   useEffect(() => {
@@ -603,13 +618,27 @@ const BlackjackGame = () => {
 
   useEffect(() => {
     setHiddenDecisionKey((previous) => {
-      if (!previous || !gameData?.players) return previous;
+      if (!previous || !Array.isArray(gameData?.players)) return previous;
       const [gameIdText, seatText] = previous.split("-");
       if (String(gameData.id) !== gameIdText) return null;
       const seat = Number(seatText);
       const player = gameData.players[seat];
       if (!player) return null;
       const currentKey = `${gameData.id}-${seat}-${player.cards?.length || 0}-${player.sum || 0}-${player.isDouble ? 1 : 0}`;
+      return currentKey === previous ? previous : null;
+    });
+  }, [gameData]);
+
+  useEffect(() => {
+    setPendingDecisionKey((previous) => {
+      if (!previous || !Array.isArray(gameData?.players)) return previous;
+      const [gameIdText, seatText] = previous.split("-");
+      if (String(gameData.id) !== gameIdText) return null;
+      const seat = Number(seatText);
+      const player = gameData.players[seat];
+      if (!player) return null;
+      const cards = Array.isArray(player.cards) ? player.cards : [];
+      const currentKey = `${gameData.id}-${seat}-${cards.length}-${player.sum || 0}-${player.isDouble ? 1 : 0}`;
       return currentKey === previous ? previous : null;
     });
   }, [gameData]);
@@ -643,18 +672,20 @@ useEffect(() => {
   // basic guard (original had a redirect if top-level frame; we keep non-invasive behavior)
   useEffect(() => {
     if (typeof window !== "undefined") window.parent.postMessage("userget", "*");
-    window.addEventListener("message", function (event) {
-    if (event?.data?.username) {
+    const handleParentMessage = (event) => {
+      if (event?.data?.username) {
+        setUserData((previous) => mergeClientData(previous, event.data));
         const payLoad = {
             method: "syncBalance",
-
             balance: event?.data?.balance,
         };
         try {
-            send(payLoad);
+            sendRef.current(payLoad);
         } catch (error) { }
-    }
-});
+      }
+    };
+    window.addEventListener("message", handleParentMessage);
+    return () => window.removeEventListener("message", handleParentMessage);
   }, []);
     
     useEffect(() => {
@@ -719,29 +750,35 @@ setTimeout(() => {
     var _totalWin = 0;
     var _totalBetAll = 0;
     var _totalWinAll = 0;
-const bets = gameData.players.filter((player) => player?.nickname === userData.nickname && player?.bet > 0);
+const players = Array.isArray(gameData.players) ? gameData.players : [];
+const sideBets = Array.isArray(gameData.sideBets) ? gameData.sideBets : [];
+const dealerState = gameData.dealer || {};
+const dealerHiddenCards = Array.isArray(dealerState.hiddencards) ? dealerState.hiddencards : [];
+const currentPlayer = players[gameData.currentPlayer] || {};
+const currentPlayerCards = Array.isArray(currentPlayer.cards) ? currentPlayer.cards : [];
+const bets = players.filter((player) => player?.nickname === userData?.nickname && player?.bet > 0);
 
     _countBet = bets.length;
     if (_countBet > 0) {
         _totalBet = bets.reduce((a, b) => a + (b["bet"] || 0), 0);
         _totalWin = bets.reduce((a, b) => a + (b["win"] || 0), 0);
     }
-    const sbets = gameData.sideBets.filter((player) => player?.nickname === userData.nickname && player?.amount > 0);
+    const sbets = sideBets.filter((player) => player?.nickname === userData?.nickname && player?.amount > 0);
     _totalBet = _totalBet + sbets.reduce((a, b) => a + (b["amount"] || 0), 0);
     _totalWin = _totalWin + sbets.reduce((a, b) => a + (b["win"] || 0), 0);
 
-    const betsAll = gameData.players.filter((player) => player?.bet > 0);
+    const betsAll = players.filter((player) => player?.bet > 0);
 
     _totalBetAll = betsAll.reduce((a, b) => a + (b["bet"] || 0), 0);
     _totalWinAll = betsAll.reduce((a, b) => a + (b["win"] || 0), 0);
 
-    const sbetsAll = gameData.sideBets.filter((player) => player?.amount > 0);
+    const sbetsAll = sideBets.filter((player) => player?.amount > 0);
     _totalBetAll = _totalBetAll + sbetsAll.reduce((a, b) => a + (b["amount"] || 0), 0);
     _totalWinAll = _totalWinAll + sbetsAll.reduce((a, b) => a + (b["win"] || 0), 0);
    
     return (
         <>
-            <span id="dark-overlay" className={gameData.gameOn && gameData.dealer.hiddencards.length > 0 && gameData.players[gameData.currentPlayer]?.nickname === userData?.nickname && gameData.players[gameData.currentPlayer]?.cards.length >= 2 && gameData.players[gameData.currentPlayer]?.sum < 21 ? "curplayer" : ""}></span>
+            <span id="dark-overlay" className={gameData.gameOn && dealerHiddenCards.length > 0 && currentPlayer?.nickname === userData?.nickname && currentPlayerCards.length >= 2 && currentPlayer?.sum < 21 ? "curplayer" : ""}></span>
             <div>
                 <div className={lastMode ? "game-room last" : "game-room"} id="scale">
                     <div id="table-graphics"></div>
@@ -786,10 +823,18 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                         </div>
                     )}
 
-                    <Dealer dealer={gameData.dealer} last={lastMode} />
+                    <Dealer dealer={dealerState} last={lastMode} />
 
                     <div id="players-container">
-                        {gameData.players.map(function (player, pNumber) {
+                        {players.map(function (rawPlayer, pNumber) {
+                            const playerCards = Array.isArray(rawPlayer?.cards) ? rawPlayer.cards : [];
+                            const player = {
+                                ...(rawPlayer || {}),
+                                cards: playerCards,
+                                sum: Number(rawPlayer?.sum || 0),
+                                bet: Number(rawPlayer?.bet || 0),
+                                win: Number(rawPlayer?.win || 0),
+                            };
                             var _resClass = "";
                             var _resCoinClass = "animate__slideInDown";
                             var _res = "";
@@ -827,26 +872,26 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                             _renge.push(_renge[0] * 2);
                             _renge.push(_renge[0] * 5);
                             //_renge.push(_renge[0] * 8);
-                            var sidePP = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "PerfectPer");
+                            var sidePP = haveSideBet(sideBets, userData?.nickname, pNumber, "PerfectPer");
 
-                            var allBet = getAllBets(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
-                            var sidePPPlayer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "PerfectPer");
+                            var allBet = getAllBets(sideBets, player.nickname, pNumber, "PerfectPer") || [];
+                            var sidePPPlayer = haveSideBet(sideBets, player.nickname, pNumber, "PerfectPer");
 
-                            var side213 = haveSideBet(gameData.sideBets, userData.nickname, pNumber, "21+3");
-                            var side213layer = haveSideBet(gameData.sideBets, player.nickname, pNumber, "21+3");
-                            var allBet21 = getAllBets(gameData.sideBets, player.nickname, pNumber, "21+3");
+                            var side213 = haveSideBet(sideBets, userData?.nickname, pNumber, "21+3");
+                            var side213layer = haveSideBet(sideBets, player.nickname, pNumber, "21+3");
+                            var allBet21 = getAllBets(sideBets, player.nickname, pNumber, "21+3") || [];
                             const decisionKey = `${gameData.id}-${pNumber}-${player.cards.length}-${player.sum}-${player.isDouble ? 1 : 0}`;
                             const isDecisionTurn =
                                 gameData.gameOn &&
-                                gameData.dealer.hiddencards.length > 0 &&
+                                dealerHiddenCards.length > 0 &&
                                 gameData.currentPlayer === pNumber &&
-                                player.nickname === userData.nickname &&
+                                player.nickname === userData?.nickname &&
                                 player.cards.length >= 2 &&
                                 player.sum < 21 &&
                                 !player.isDouble &&
                                 !player.hasLeft;
                             return (
-                                <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0 && lastMode === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
+                                <span className={player.bet ? (gameData.currentPlayer === pNumber && gameData.gameOn && dealerHiddenCards.length > 0 && lastMode === false ? "players curplayer" : "players " + _resClass) : "players"} key={pNumber} id={"slot" + pNumber}>
                                     {!player?.nickname ? (
                                         <>
                                             <div
@@ -1030,7 +1075,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                     </div>
                                                 </>
                                             )}
-                                            {isDecisionTurn && hiddenDecisionKey !== decisionKey ? (
+                                            {isDecisionTurn && hiddenDecisionKey !== decisionKey && pendingDecisionKey !== decisionKey ? (
                                                 <div
                                                     key={`decision-${decisionKey}`}
                                                     id="decision"
@@ -1044,6 +1089,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                             id="stand"
                                                             onClick={() => {
                                                                 setHiddenDecisionKey(decisionKey);
+                                                                setPendingDecisionKey(null);
                                                                 $("#decision").hide();
                                                                 $(".user-action").addClass("noclick-nohide");
                                                                sounds.current.actionClick.play();
@@ -1059,6 +1105,8 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                             className="user-action"
                                                             id="hit"
                                                             onClick={() => {
+                                                                setPendingDecisionKey(decisionKey);
+                                                                $("#decision").hide();
                                                                 $(".user-action").addClass("noclick-nohide");
                                                                sounds.current.actionClick.play();
                                                                 send({ method: "hit", gameId: gameData.id, seat: pNumber });
@@ -1068,13 +1116,14 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                                         </button>
                                                         <div className="user-action-text">HIT</div>
                                                     </div>
-                                                    {player.cards.length === 2 && userData.balance >= player.bet && (
+                                                    {player.cards.length === 2 && Number(userData?.balance || 0) >= player.bet && (
                                                         <div className="user-action-box  hide-element">
                                                             <button
                                                                 className="user-action"
                                                                 id="doubleDown"
                                                                 onClick={() => {
                                                                     setHiddenDecisionKey(decisionKey);
+                                                                    setPendingDecisionKey(null);
                                                                     $("#decision").hide();
                                                                     $(".user-action").addClass("noclick-nohide");
                                                                    sounds.current.actionClick.play();
@@ -1091,7 +1140,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                             ) : (
                                                 <PlayerNamePlate
                                                     player={player}
-                                                    active={gameData.currentPlayer === pNumber && gameData.gameOn && gameData.dealer.hiddencards.length > 0}
+                                                    active={gameData.currentPlayer === pNumber && gameData.gameOn && dealerHiddenCards.length > 0}
                                                 />
                                             )}
 
@@ -1130,7 +1179,7 @@ const bets = gameData.players.filter((player) => player?.nickname === userData.n
                                     )}
                                     <div id="players-timer-container">
                                         <svg className="players-timer">
-                                            <circle className={gameData.currentPlayer === pNumber && player?.nickname && gameData.gameOn && player?.sum < 21 && player?.bet > 0 && player.cards.length >= 2 && gameData.dealer.hiddencards.length > 0 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent" />
+                                            <circle className={gameData.currentPlayer === pNumber && player?.nickname && gameData.gameOn && player?.sum < 21 && player?.bet > 0 && player.cards.length >= 2 && dealerHiddenCards.length > 0 ? "circle-animation" : ""} cx="48.5" cy="48.5" r="45" strokeWidth="10" fill="transparent" />
                                         </svg>
                                     </div>
                                 </span>
