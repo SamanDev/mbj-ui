@@ -466,6 +466,7 @@ const BlackjackGame = () => {
   const [gameData, setGameData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [conn, setConn] = useState(false);
+  const [hasEverConnected, setHasEverConnected] = useState(false);
   const [connectionFailed, setConnectionFailed] = useState(false);
   const [gameTimer, setGameTimer] = useState(-1);
   const [lastMode, setLastMode] = useState(false);
@@ -517,6 +518,7 @@ const BlackjackGame = () => {
       if (data.theClient) {
         setUserData((previous) => mergeClientData(previous, data.theClient));
         setConn(true);
+        setHasEverConnected(true);
       }
       
     }
@@ -732,7 +734,8 @@ setTimeout(() => {
    
   if (connectionFailed) return <LoaderPage errcon={true} />;
   if (!gamesDataLive || !userData) return <LoaderPage />;
-   if (!conn) return <LoaderPage errcon={true} />;
+   if (!conn && !hasEverConnected) return <LoaderPage />;
+   if (!conn) return <LoaderPage />;
 
    if (!gameData || selectedGameId <= 0) {
     return <TableList games={gamesData} onSelect={
