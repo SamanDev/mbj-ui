@@ -158,11 +158,12 @@ function useWebSocket(url, auth, handlers = {}) {
 
     function scheduleReconnect() {
       if (closedByUser || reconnectTimerRef.current) return;
-      if (reconnectRef.current >= maxReconnectAttempts && !offlineNotifiedRef.current) {
+      if (reconnectRef.current >= maxReconnectAttempts) {
         if (!offlineNotifiedRef.current && listenersRef.current.onclose) {
           offlineNotifiedRef.current = true;
           listenersRef.current.onclose();
         }
+        return;
       }
       reconnectRef.current += 1;
       const delay = Math.min(30000, 1000 * Math.pow(1.5, reconnectRef.current));
@@ -209,10 +210,6 @@ function useWebSocket(url, auth, handlers = {}) {
       ws.onclose = () => {
         if (pingRef.current) clearInterval(pingRef.current);
         if (!closedByUser) {
-          if (!offlineNotifiedRef.current && listenersRef.current.onclose) {
-            offlineNotifiedRef.current = true;
-            listenersRef.current.onclose();
-          }
           scheduleReconnect();
         } else if (listenersRef.current.onclose) {
           listenersRef.current.onclose();
