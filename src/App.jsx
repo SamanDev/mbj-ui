@@ -430,6 +430,30 @@ const BlackjackGame = () => {
     return isUiTest && Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
   })();
   const applyUiTestBalance = (client) => client && uiTestBalance !== null ? { ...client, balance: uiTestBalance } : client;
+  const isEmptyClientValue = (value) => value === undefined || value === null || value === "";
+  const mergeClientData = (previous, client) => {
+    const next = applyUiTestBalance(client);
+    if (!next) return previous;
+    const merged = { ...(previous || {}), ...next };
+    [
+      "username",
+      "nickname",
+      "avatar",
+      "level",
+      "levelPoint",
+      "levelPointMax",
+      "casinoLevelPoint",
+      "casinoLevelPointMax",
+    ].forEach((key) => {
+      if (previous && isEmptyClientValue(next[key]) && !isEmptyClientValue(previous[key])) {
+        merged[key] = previous[key];
+      }
+    });
+    if (!isUiTest && previous && Number(previous.balance) > 0 && Number(next.balance) === 0) {
+      merged.balance = previous.balance;
+    }
+    return merged;
+  };
   const [gamesData, setGamesData] = useState([]);
   const [gamesDataLive, setGamesDataLive] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(0);
@@ -480,7 +504,7 @@ const BlackjackGame = () => {
 
     if (method === "connect") {
       if (data.theClient) {
-        setUserData(applyUiTestBalance(data.theClient));
+        setUserData((previous) => mergeClientData(previous, data.theClient));
         setConn(true);
       }
       
@@ -646,8 +670,6 @@ setTimeout(() => {
      
     }, [selectedGameId,gamesData.length]);
     useEffect(() => {
-   $("#decision").show();
-       
         setTimeout(() => {
             animateNum()
         }, 100);
